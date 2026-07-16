@@ -88,7 +88,7 @@ export const STAGES: Stage[] = [
     description: '青龙、玄武、麒麟齐聚，四象之力的终极考验',
     enemyPetIds: [25, 23, 26],   // 青龙、玄武、麒麟
     difficulty: 'insane' as Difficulty,
-    rewardPetId: 27,             // 九尾狐
+    rewardPetId: 26,             // 麒麟
   },
 ];
 

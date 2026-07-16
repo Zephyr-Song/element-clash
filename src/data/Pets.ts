@@ -55,7 +55,7 @@ export const PETS: Pet[] = [
     description: '雪原中的苍狼，擅长冰系法术',
   },
   {
-    id: 7, name: '幼龙', emoji: '🐉', element: 'dragon',
+    id: 7, name: '幼龙', emoji: '🐲', element: 'dragon',
     baseHp: 75, baseAtk: 85, baseDef: 60, baseSpA: 80, baseSpD: 70, baseSpe: 85,
     trait: 'hustle', skills: [21, 22, 23, 24],
     description: '年幼但潜力无穷的龙族，攻击力强',
@@ -195,13 +195,6 @@ export const PETS: Pet[] = [
     baseHp: 95, baseAtk: 90, baseDef: 95, baseSpA: 100, baseSpD: 95, baseSpe: 90,
     trait: 'natural_cure', skills: [12, 40, 9, 10],
     description: '仁兽麒麟，祥瑞之光治愈万物',
-    rarity: 'SSR',
-  },
-  {
-    id: 27, name: '九尾狐', emoji: '🦊', element: 'fire', secondaryElement: 'psychic',
-    baseHp: 80, baseAtk: 75, baseDef: 60, baseSpA: 115, baseSpD: 80, baseSpe: 110,
-    trait: 'adaptability', skills: [1, 56, 39, 3],
-    description: '千年九尾妖狐，幻术与烈焰交织',
     rarity: 'SSR',
   },
 ];
