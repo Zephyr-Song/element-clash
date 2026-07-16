@@ -40,6 +40,8 @@ export class BattleScene {
   // 状态
   private isProcessing: boolean = false;
   private onBattleEnd: (state: BattleState) => void;
+  private onQuit?: () => void;
+  private quitRequested: boolean = false;
   private state: BattleState | null = null;
 
   constructor(
@@ -47,8 +49,10 @@ export class BattleScene {
     enemyParty: Pet[],
     difficulty: Difficulty,
     onBattleEnd: (state: BattleState) => void,
+    onQuit?: () => void,
   ) {
     this.onBattleEnd = onBattleEnd;
+    this.onQuit = onQuit;
     this.difficulty = difficulty;
     this.engine = new BattleEngine();
 
@@ -122,6 +126,13 @@ export class BattleScene {
 
     // === 战斗日志 ===
     this.el.appendChild(this.actionLog.el);
+
+    // === 退出战斗按钮（右上角悬浮）===
+    const quitBtn = document.createElement('button');
+    quitBtn.className = 'btn btn-sm btn-danger battle-quit-btn';
+    quitBtn.textContent = '🚪 退出战斗';
+    quitBtn.addEventListener('click', () => this.confirmQuit());
+    this.el.appendChild(quitBtn);
 
     // === 事件绑定 ===
     actionBar.querySelector('#btn-item')!.addEventListener('click', () => this.useItem());
@@ -347,6 +358,46 @@ export class BattleScene {
     this.el.appendChild(overlay);
   }
 
+  /** 中途退出战斗：弹确认框，确认后回调上层返回关卡选择 */
+  private confirmQuit(): void {
+    if (this.quitRequested) return;
+    AudioManager.playClickSound();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay switch-modal';
+
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+      <h2>退出战斗？</h2>
+      <div class="modal-body">确定要放弃当前战斗并返回关卡选择吗？<br>本次进度不会保存。</div>
+    `;
+
+    const footer = document.createElement('div');
+    footer.className = 'modal-footer';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn btn-sm btn-secondary';
+    cancelBtn.textContent = '继续战斗';
+    cancelBtn.addEventListener('click', () => this.removeOverlay(overlay));
+
+    const okBtn = document.createElement('button');
+    okBtn.className = 'btn btn-sm btn-danger';
+    okBtn.textContent = '退出';
+    okBtn.addEventListener('click', () => {
+      this.removeOverlay(overlay);
+      this.quitRequested = true;
+      if (this.onQuit) this.onQuit();
+    });
+
+    footer.appendChild(cancelBtn);
+    footer.appendChild(okBtn);
+    modal.appendChild(footer);
+
+    overlay.appendChild(modal);
+    this.el.appendChild(overlay);
+  }
+
   private removeOverlay(overlay: HTMLElement): void {
     try {
       if (overlay.parentElement) {
@@ -362,7 +413,7 @@ export class BattleScene {
   // ==================== 执行回合 ====================
 
   private async executeAction(action: Action): Promise<void> {
-    if (this.isProcessing || !this.state) return;
+    if (this.isProcessing || !this.state || this.quitRequested) return;
     this.isProcessing = true;
     this.setActionButtonsEnabled(false);
 

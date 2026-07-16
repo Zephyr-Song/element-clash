@@ -4,7 +4,7 @@
  */
 
 import { PETS } from '../data/Pets';
-import { GACHA_PET_IDS, GACHA_SINGLE_COST, GACHA_TEN_COST } from '../utils/Storage';
+import { GACHA_PET_IDS, GACHA_SINGLE_COST, GACHA_TEN_COST, GACHA_90_PET_ID, GACHA_90_DRAWS, canClaimGacha90, claimGacha90 } from '../utils/Storage';
 import { loadSave, spendCoins, drawGachaSingle, drawGachaTen } from '../utils/Storage';
 import { AudioManager } from '../utils/AudioManager';
 import type { GachaResult, GachaRarity } from '../data/types';
@@ -95,22 +95,62 @@ export class GachaScene {
     ownedTitle.textContent = '📦 已获得：';
     ownedSection.appendChild(ownedTitle);
     const ownedGrid = document.createElement('div');
-    ownedGrid.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px';
+    ownedGrid.style.cssText = 'display:flex;flex-wrap:nowrap;gap:6px';
     for (const petId of GACHA_PET_IDS) {
       const pet = PETS.find(p => p.id === petId);
       if (!pet) continue;
       const owned = save.gachaPets.includes(petId);
       const rc = pet.rarity && pet.rarity !== 'UR' ? RARITY_CONFIG[pet.rarity] : RARITY_CONFIG.R;
       ownedGrid.innerHTML += `
-        <div style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;border:1px solid ${owned ? rc.color + '44' : 'rgba(255,255,255,.08)'};background:${owned ? rc.bg : 'rgba(255,255,255,.02)'};opacity:${owned ? '1' : '0.35'};font-size:.85em">
-          <span>${owned ? pet.emoji : '❓'}</span>
-          <span style="color:${owned ? rc.color : 'rgba(255,255,255,.3)'}">${owned ? pet.name : '???'}</span>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1 1 0;min-width:0;padding:6px 2px;border-radius:8px;border:1px solid ${owned ? rc.color + '44' : 'rgba(255,255,255,.08)'};background:${owned ? rc.bg : 'rgba(255,255,255,.02)'};opacity:${owned ? '1' : '0.35'};font-size:.8em">
+          <span style="font-size:1.3em">${owned ? pet.emoji : '❓'}</span>
+          <span style="color:${owned ? rc.color : 'rgba(255,255,255,.3)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${owned ? pet.name : '???'}</span>
           <span style="font-size:.7em;color:${rc.color}">${pet.rarity || ''}</span>
         </div>
       `;
     }
     ownedSection.appendChild(ownedGrid);
     this.el.appendChild(ownedSection);
+
+    // 里程碑奖励：累计抽90抽送大圣
+    const milestone = document.createElement('div');
+    milestone.style.cssText = 'width:100%;max-width:500px;margin-bottom:20px;padding:16px;border-radius:14px;border:2px solid #ff6b6b44;background:linear-gradient(135deg,rgba(255,107,107,.12),rgba(254,211,48,.06));text-align:center';
+    const pet90 = PETS.find(p => p.id === GACHA_90_PET_ID)!;
+    const drawn = save.totalDraws;
+    const claimed90 = save.gacha90RewardCollected;
+    const canClaim90 = canClaimGacha90();
+    const remain90 = Math.max(0, GACHA_90_DRAWS - drawn);
+    let milestoneHtml = `
+      <div style="font-size:.85em;color:#ff6b6b;margin-bottom:10px;font-weight:700">🏆 里程碑奖励</div>
+      <div style="display:flex;align-items:center;gap:14px;justify-content:center">
+        <div style="font-size:3em;filter:${claimed90 || drawn >= GACHA_90_DRAWS ? 'none' : 'grayscale(.7)'}">${pet90.emoji}</div>
+        <div style="text-align:left">
+          <div style="font-size:1.1em;font-weight:700;color:#ff6b6b">UR ${pet90.name}</div>
+          <div style="font-size:.78em;color:rgba(255,255,255,.6)">${pet90.description}</div>
+          <div style="font-size:.85em;color:#fed330;margin-top:4px">🎁 累计抽${GACHA_90_DRAWS}抽送（当前 ${Math.min(drawn, GACHA_90_DRAWS)}/${GACHA_90_DRAWS}）</div>
+        </div>
+      </div>
+    `;
+    if (claimed90) {
+      milestoneHtml += `<div style="font-size:.85em;color:#26de81;margin-top:10px">✅ 已领取</div>`;
+    } else if (canClaim90) {
+      milestoneHtml += `<button class="btn btn-primary" id="btn-claim-90" style="margin-top:12px;background:linear-gradient(135deg,#ff6b6b,#ff8e53)">🎉 领取大圣</button>`;
+    } else {
+      milestoneHtml += `<div style="font-size:.8em;color:rgba(255,255,255,.4);margin-top:8px">再抽 ${remain90} 抽即可获得</div>`;
+    }
+    milestone.innerHTML = milestoneHtml;
+    this.el.appendChild(milestone);
+
+    if (canClaim90) {
+      const claimBtn = milestone.querySelector('#btn-claim-90') as HTMLButtonElement;
+      claimBtn.addEventListener('click', () => {
+        AudioManager.playClickSound();
+        claimGacha90();
+        this.el.innerHTML = '';
+        this.render();
+        this.showToast(`🎉 恭喜获得 UR ${pet90.name}！已加入图鉴与可用精灵`);
+      });
+    }
 
     // 返回按钮
     const backBtn = document.createElement('button');

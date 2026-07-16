@@ -5,7 +5,7 @@
 
 import type { Stage, Difficulty } from './types';
 import { PETS } from './Pets';
-import { loadSave, GACHA_PET_IDS, UR_REWARD_PET_ID, canClaimUR, CHECKIN_REWARD_PET_ID, CHECKIN_REWARD_PET_ID_7 } from '../utils/Storage';
+import { loadSave, GACHA_PET_IDS, GACHA_90_PET_ID, CHECKIN_REWARD_PET_ID, CHECKIN_REWARD_PET_ID_7 } from '../utils/Storage';
 
 export const STAGES: Stage[] = [
   {
@@ -82,8 +82,8 @@ export function getUnlockedPetIds(completedStages: number[]): number[] {
   for (const pid of save.gachaPets) {
     if (GACHA_PET_IDS.includes(pid)) unlocked.add(pid);
   }
-  // UR通关奖励（已领取才解锁）
-  if (save.urRewardCollected) unlocked.add(UR_REWARD_PET_ID);
+  // 累计抽90抽里程碑奖励（已领取才解锁）
+  if (save.gacha90RewardCollected) unlocked.add(GACHA_90_PET_ID);
   // 签到奖励（已领取才解锁）
   if (save.checkInRewardCollected) unlocked.add(CHECKIN_REWARD_PET_ID);
   if (save.checkInReward7Collected) unlocked.add(CHECKIN_REWARD_PET_ID_7);

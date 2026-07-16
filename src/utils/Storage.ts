@@ -41,8 +41,9 @@ const DEFAULT_SAVE: SaveData = {
   lastCheckIn: '',
   checkInStreak: 0,
   gachaPets: [],
+  totalDraws: 0,
   pityCounter: 0,
-  urRewardCollected: false,
+  gacha90RewardCollected: false,
   checkInRewardCollected: false,
   checkInReward7Collected: false,
 };
@@ -51,8 +52,13 @@ export function loadSave(): SaveData {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (raw) {
-      const data = JSON.parse(raw) as Partial<SaveData>;
-      return { ...DEFAULT_SAVE, ...data };
+      const data = JSON.parse(raw) as Partial<SaveData> & { urRewardCollected?: boolean };
+      const merged = { ...DEFAULT_SAVE, ...data };
+      // 兼容旧存档：通关UR奖励(urRewardCollected) -> 累计抽90抽奖励
+      if (data.urRewardCollected && !merged.gacha90RewardCollected) {
+        merged.gacha90RewardCollected = true;
+      }
+      return merged;
     }
   } catch { /* ignore */ }
   return { ...DEFAULT_SAVE };
@@ -154,6 +160,7 @@ export function drawGachaSingle(): GachaResult {
   if (!save.gachaPets.includes(result.petId)) {
     save.gachaPets.push(result.petId);
   }
+  save.totalDraws += 1; // 累计抽卡次数+1
   saveSave(save);
   return result;
 }
@@ -171,6 +178,7 @@ export function drawGachaTen(): GachaResult[] {
       save.gachaPets.push(r.petId);
     }
   }
+  save.totalDraws += 10; // 十连计10次
   saveSave(save);
   return results;
 }
@@ -204,21 +212,23 @@ function rollPetByRarity(rarity: GachaRarity, ownedPetIds: number[]): GachaResul
   return { petId: pet.id, rarity, isNew };
 }
 
-// ==================== UR 通关奖励 ====================
+// ==================== 累计抽卡里程碑奖励 ====================
 
-/** UR奖励宠物ID */
-export const UR_REWARD_PET_ID = 19;
+/** 累计抽卡里程碑奖励宠物ID（大圣） */
+export const GACHA_90_PET_ID = 19;
+/** 解锁所需累计抽卡次数 */
+export const GACHA_90_DRAWS = 90;
 
-/** 检查是否满足UR奖励条件：通关全部6关且未领取 */
-export function canClaimUR(): boolean {
+/** 检查是否满足累计抽90抽奖励条件且未领取 */
+export function canClaimGacha90(): boolean {
   const save = loadSave();
-  return save.completedStages.length >= 6 && !save.urRewardCollected;
+  return save.totalDraws >= GACHA_90_DRAWS && !save.gacha90RewardCollected;
 }
 
-/** 领取UR奖励（永久记录已领取） */
-export function claimUR(): void {
+/** 领取累计抽90抽奖励（永久记录已领取） */
+export function claimGacha90(): void {
   const save = loadSave();
-  save.urRewardCollected = true;
+  save.gacha90RewardCollected = true;
   saveSave(save);
 }
 

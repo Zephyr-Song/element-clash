@@ -325,8 +325,9 @@ export interface SaveData {
   lastCheckIn: string;   // ISO日期字符串
   checkInStreak: number;  // 连续签到天数
   gachaPets: number[];    // 已通过抽卡获得的精灵ID
-  pityCounter: number;    // 保底计数器（SSR保底）
-  urRewardCollected: boolean; // 是否已领取通关UR奖励
+  totalDraws: number;     // 累计抽卡次数（十连计10次）
+  pityCounter: number;    // 保底计数器（已弃用，保留兼容）
+  gacha90RewardCollected: boolean; // 是否已领取累计抽90抽大圣奖励
   checkInRewardCollected: boolean; // 是否已领取签到3天奖励
   checkInReward7Collected: boolean; // 是否已领取签到7天奖励
 }

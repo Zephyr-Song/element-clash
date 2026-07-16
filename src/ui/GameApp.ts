@@ -5,7 +5,7 @@
 import type { Pet, BattleState, SceneType, Difficulty } from '../data/types';
 import { PETS } from '../data/Pets';
 import { STAGES, getEnemyPets, getUnlockedPetIds, STARTER_PET_IDS } from '../data/Stages';
-import { loadSave, saveSave, updateRecord, isStageCompleted, completeStage, checkIn, getCheckInInfo, GACHA_PET_IDS, canClaimUR, claimUR, UR_REWARD_PET_ID, canClaimCheckInReward, claimCheckInReward, CHECKIN_REWARD_PET_ID, CHECKIN_REWARD_STREAK, canClaimCheckInReward7, claimCheckInReward7, CHECKIN_REWARD_PET_ID_7, CHECKIN_REWARD_STREAK_7 } from '../utils/Storage';
+import { loadSave, saveSave, updateRecord, isStageCompleted, completeStage, checkIn, getCheckInInfo, GACHA_PET_IDS, canClaimCheckInReward, claimCheckInReward, CHECKIN_REWARD_PET_ID, CHECKIN_REWARD_STREAK, canClaimCheckInReward7, claimCheckInReward7, CHECKIN_REWARD_PET_ID_7, CHECKIN_REWARD_STREAK_7 } from '../utils/Storage';
 import { AudioManager } from '../utils/AudioManager';
 import { ELEMENT_NAMES, ELEMENT_COLORS, ELEMENT_EMOJIS } from '../data/types';
 import { getEffectiveness } from '../data/Elements';
@@ -199,6 +199,7 @@ export class GameApp {
         this.lastBattleState = state;
         this.showResult(state, stageId);
       },
+      () => this.showStageSelect(),   // 中途退出 → 返回关卡选择
     ), 'battle');
   }
 
@@ -230,12 +231,6 @@ export class GameApp {
       completeStage(stageId);
     }
 
-    // 检查UR奖励（通关全部6关）
-    if (canClaimUR()) {
-      claimUR();
-      scene.el.appendChild(this.createURRewardBanner());
-    }
-
     this.switchScene(scene, 'result');
   }
 
@@ -250,26 +245,6 @@ export class GameApp {
       this.container.removeChild(modal.el);
     });
     this.container.appendChild(modal.el);
-  }
-
-  /** UR通关奖励横幅 */
-  private createURRewardBanner(): HTMLElement {
-    const urPet = PETS.find(p => p.id === UR_REWARD_PET_ID);
-    const banner = document.createElement('div');
-    banner.style.cssText = `
-      margin-top:20px;padding:20px;
-      background:linear-gradient(135deg,rgba(255,107,107,.2),rgba(254,211,48,.2));
-      border:2px solid #ff6b6b66;border-radius:16px;
-      text-align:center;animation:pulse 1.5s ease-in-out infinite
-    `;
-    banner.innerHTML = `
-      <div style="font-size:.9em;color:#ff6b6b;margin-bottom:8px">👑 恭喜通关全部关卡！</div>
-      <div style="font-size:3em;margin:8px 0">${urPet?.emoji || '🐵'}</div>
-      <div style="font-size:1.3em;font-weight:700;color:#ff6b6b;margin:4px 0">UR ${urPet?.name || '大圣'}</div>
-      <div style="font-size:.8em;color:rgba(255,255,255,.5)">${urPet?.description || ''}</div>
-      <div style="font-size:.75em;color:#fed330;margin-top:6px">🎉 已获得传说级精灵！</div>
-    `;
-    return banner;
   }
 
   /** 显示玩法介绍 */

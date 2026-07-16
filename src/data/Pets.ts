@@ -30,10 +30,10 @@ export const PETS: Pet[] = [
     rarity: 'R',
   },
   {
-    id: 3, name: '海洋精灵', emoji: '🧜', element: 'water',
+    id: 3, name: '海洋精灵', emoji: '🐬', element: 'water',
     baseHp: 85, baseAtk: 60, baseDef: 65, baseSpA: 85, baseSpD: 75, baseSpe: 80,
     trait: 'damp', skills: [5, 6, 7, 8],
-    description: '来自深海的精灵，攻守均衡',
+    description: '聪慧友善的海洋精灵，攻守均衡',
   },
   {
     id: 4, name: '自然守护者', emoji: '🌳', element: 'grass',
