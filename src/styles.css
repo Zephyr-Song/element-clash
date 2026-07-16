@@ -1,0 +1,432 @@
+/**
+ * styles.css - 全部样式+动画
+ * 深色主题 / 布局 / CSS Animations / Keyframes
+ */
+
+/* ==================== RESET & BASE ==================== */
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Segoe UI','Microsoft YaHei',sans-serif;
+  background:linear-gradient(135deg,#0a0a1a 0%,#1a1a3e 50%,#0d0d2b 100%);
+  color:#e0e0e0;
+  min-height:100vh;
+  overflow-x:hidden;
+  -webkit-user-select:none;user-select:none;
+}
+#app{width:100%;min-height:100vh;position:relative}
+
+/* ==================== SCENES ==================== */
+.scene{
+  width:100%;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:20px;position:absolute;top:0;left:0;
+  animation:sceneIn .4s ease-out;
+}
+.scene.hidden{display:none}
+@keyframes sceneIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ==================== BUTTONS ==================== */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:14px 32px;border:none;border-radius:12px;
+  font-size:1.1em;font-weight:600;cursor:pointer;
+  transition:all .15s ease;color:#fff;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  box-shadow:0 4px 15px rgba(102,126,234,.4);
+}
+.btn:hover{transform:scale(1.05);box-shadow:0 6px 24px rgba(255,255,255,.15)}
+.btn:active{transform:scale(.97)}
+.btn-secondary{background:linear-gradient(135deg,#2d3561,#1e2243);border:1px solid rgba(255,255,255,.1);box-shadow:none}
+.btn-danger{background:linear-gradient(135deg,#e84545,#c0392b)}
+.btn-success{background:linear-gradient(135deg,#26de81,#20bf6b);color:#1a1a2e}
+.btn-sm{padding:8px 18px;font-size:.88em;border-radius:8px}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.btn-block{width:100%}
+
+/* ==================== MAIN MENU ==================== */
+.main-menu{text-align:center;position:relative;z-index:1}
+.main-title{
+  font-size:3em;font-weight:900;letter-spacing:4px;margin-bottom:8px;
+  background:linear-gradient(135deg,#f1c40f,#e84545,#667eea,#26de81);
+  background-size:300% 300%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:titleShift 3s ease infinite;
+}
+@keyframes titleShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.main-subtitle{font-size:1.1em;color:rgba(255,255,255,.45);margin-bottom:48px}
+.main-buttons{display:flex;flex-direction:column;gap:14px;align-items:center;margin-bottom:36px}
+.main-buttons .btn{width:260px;padding:16px 32px;font-size:1.15em}
+.main-info{
+  display:flex;gap:28px;justify-content:center;
+  padding:14px 28px;background:rgba(255,255,255,.05);
+  border-radius:12px;border:1px solid rgba(255,255,255,.08);
+  font-size:.95em;color:rgba(255,255,255,.6);
+}
+
+/* ==================== PARTICLES ==================== */
+.particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
+.particle{
+  position:absolute;border-radius:50%;opacity:0;
+  animation:particleUp linear infinite;
+}
+@keyframes particleUp{
+  0%{transform:translateY(100vh) scale(0);opacity:0}
+  8%{opacity:.35}
+  92%{opacity:.35}
+  100%{transform:translateY(-10vh) scale(1);opacity:0}
+}
+
+/* ==================== PET SELECT ==================== */
+.pet-select{max-width:920px;margin:0 auto;width:100%}
+.ps-title{font-size:1.8em;font-weight:700;text-align:center;color:#fff;margin-bottom:6px}
+.ps-count{text-align:center;color:rgba(255,255,255,.5);margin-bottom:22px;font-size:1.05em}
+.pet-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;
+}
+@media(max-width:768px){.pet-grid{grid-template-columns:repeat(3,1fr);gap:10px}}
+@media(max-width:480px){.pet-grid{grid-template-columns:repeat(2,1fr);gap:8px}}
+
+/* ==================== PET CARD ==================== */
+.pet-card{
+  background:rgba(255,255,255,.06);
+  border:2px solid rgba(255,255,255,.08);
+  border-radius:14px;padding:10px 10px 8px;
+  cursor:pointer;transition:all .2s ease;position:relative;overflow:hidden;
+}
+.pet-card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.22);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.pet-card.selected{
+  border-color:#f1c40f;
+  box-shadow:0 0 20px rgba(241,196,15,.4),0 0 40px rgba(241,196,15,.12);
+  background:rgba(241,196,15,.06);
+}
+.pet-card .el-bar{height:4px;border-radius:2px;margin-bottom:8px}
+.pet-card .emoji{font-size:2.4em;text-align:center;margin:4px 0;display:block}
+.pet-card .name{font-weight:700;font-size:.95em;text-align:center;color:#fff;margin-bottom:5px}
+.pet-card .el-tag{
+  display:block;width:fit-content;margin:0 auto;
+  padding:2px 10px;border-radius:10px;font-size:.75em;font-weight:600;
+}
+.pet-card .stats{margin-top:6px;display:flex;flex-direction:column;gap:2px}
+.pet-card .stat-row{display:flex;align-items:center;gap:5px;font-size:.65em;color:rgba(255,255,255,.55)}
+.pet-card .stat-lbl{width:24px;text-align:right}
+.pet-card .stat-bar{flex:1;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
+.pet-card .stat-fill{height:100%;border-radius:2px;transition:width .3s ease}
+.pet-card .trait{text-align:center;font-size:.7em;color:rgba(255,255,255,.35);margin-top:5px}
+
+/* ==================== BATTLE SCENE ==================== */
+.battle-scene{
+  max-width:700px;margin:0 auto;padding:10px 14px;
+  display:flex;flex-direction:column;height:100vh;max-height:100vh;
+  justify-content:space-between;
+}
+
+/* --- Pet Info Bar --- */
+.battle-info{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 12px;background:rgba(0,0,0,.3);
+  border-radius:12px;border:1px solid rgba(255,255,255,.06);
+}
+.battle-info.right{flex-direction:row-reverse}
+.battle-info .bp-name{font-weight:700;font-size:.95em;color:#fff}
+.battle-info .bp-lv{font-size:.78em;color:rgba(255,255,255,.45);margin-left:4px}
+.battle-info .bp-badge{font-size:.78em;padding:1px 8px;border-radius:10px;font-weight:600}
+.battle-info .bp-emoji{font-size:1.8em}
+
+/* HP Bar */
+.hp-wrap{flex:1;max-width:180px}
+.hp-text{font-size:.72em;color:rgba(255,255,255,.55);margin-bottom:2px;display:flex;justify-content:space-between}
+.hp-outer{height:10px;background:rgba(255,255,255,.1);border-radius:5px;overflow:hidden}
+.hp-inner{height:100%;border-radius:5px;transition:width .5s ease-out,background .5s ease;position:relative}
+.hp-inner.high{background:linear-gradient(90deg,#26de81,#20bf6b)}
+.hp-inner.mid{background:linear-gradient(90deg,#fed330,#f7b731)}
+.hp-inner.low{background:linear-gradient(90deg,#e84545,#c0392b)}
+.hp-inner.crit{background:linear-gradient(90deg,#e84545,#ff3838);animation:hpFlash .5s ease infinite}
+@keyframes hpFlash{0%,100%{opacity:1}50%{opacity:.55}}
+
+/* Status Icons */
+.status-icons{display:flex;gap:3px;margin-top:3px}
+.status-icon{font-size:1em;animation:statusPulse 1.5s ease infinite}
+@keyframes statusPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+
+/* Sprite Area */
+.sprite-zone{display:flex;align-items:center;justify-content:center;padding:6px 0;position:relative;min-height:60px}
+.sprite{font-size:3.5em;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3));transition:all .2s ease}
+.sprite.flip{transform:scaleX(-1)}
+
+/* Field Effect Area */
+.field-fx{
+  position:relative;height:80px;
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;overflow:visible;
+}
+
+/* ==================== SKILL BUTTONS ==================== */
+.skill-panel{
+  display:flex;gap:8px;flex-wrap:wrap;
+  padding:8px 0;
+}
+.skill-btn{
+  flex:1;min-width:130px;
+  padding:10px 8px;border:none;border-radius:10px;
+  cursor:pointer;font-size:.85em;font-weight:600;
+  color:#fff;transition:all .15s ease;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  position:relative;overflow:hidden;
+}
+.skill-btn:hover:not(:disabled){transform:scale(1.05);box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.skill-btn:active:not(:disabled){transform:scale(.96)}
+.skill-btn:disabled{opacity:.3;cursor:not-allowed;filter:grayscale(.6)}
+.skill-btn .sk-name{font-size:1em}
+.skill-btn .sk-pp{font-size:.75em;opacity:.7}
+.skill-btn .sk-el{font-size:.7em;opacity:.6}
+
+/* ==================== ACTION BAR ==================== */
+.action-bar{
+  display:flex;gap:8px;padding:6px 0;align-items:center;
+}
+.action-bar .btn{flex:1;padding:10px 8px;font-size:.9em;border-radius:10px}
+
+/* ==================== BENCH PETS ==================== */
+.bench{
+  display:flex;gap:8px;padding:6px 0;flex:1;
+}
+.bench-pet{
+  padding:6px 12px;border-radius:8px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);
+  cursor:pointer;font-size:.8em;transition:all .15s ease;
+  display:flex;align-items:center;gap:6px;
+}
+.bench-pet:hover:not(.fainted):not(.active){background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2)}
+.bench-pet.fainted{opacity:.35;cursor:not-allowed;text-decoration:line-through}
+.bench-pet.active{border-color:#f1c40f;background:rgba(241,196,15,.08)}
+.bench-pet .bench-emoji{font-size:1.2em}
+.bench-pet .bench-hp{font-size:.75em;color:rgba(255,255,255,.5)}
+
+/* ==================== TURN INFO ==================== */
+.turn-info{
+  font-size:.8em;color:rgba(255,255,255,.4);text-align:right;
+  padding:4px 0;
+}
+
+/* ==================== BATTLE LOG ==================== */
+.battle-log{
+  background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.06);
+  border-radius:10px;padding:8px 10px;
+  height:120px;overflow-y:auto;font-size:.8em;
+  scroll-behavior:smooth;
+}
+.battle-log::-webkit-scrollbar{width:4px}
+.battle-log::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}
+.log-entry{padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.log-entry:last-child{border-bottom:none}
+.log-entry.log-move{color:#74b9ff}
+.log-entry.log-damage{color:#e84545;font-weight:600}
+.log-entry.log-heal{color:#26de81}
+.log-entry.log-miss{color:#636e72;font-style:italic}
+.log-entry.log-crit{color:#fdcb6e;font-weight:700}
+.log-entry.log-effective{color:#e17055;font-weight:700;font-size:1.05em}
+.log-entry.log-status{color:#a29bfe}
+.log-entry.log-stat{color:#ffeaa7}
+.log-entry.log-faint{color:#d63031;font-weight:700}
+.log-entry.log-switch{color:#81ecec}
+.log-entry.log-trait{color:#55efc4;font-style:italic}
+.log-entry.log-system{color:rgba(255,255,255,.5);font-style:italic}
+
+/* ==================== DAMAGE POPUP ==================== */
+.dmg-popup{
+  position:absolute;pointer-events:none;
+  font-weight:900;font-size:1.4em;
+  text-shadow:0 2px 4px rgba(0,0,0,.6);
+  animation:dmgFloat .9s ease-out forwards;
+  z-index:100;
+}
+.dmg-popup.normal{color:#ff7675}
+.dmg-popup.critical{color:#ffeaa7;font-size:1.7em}
+.dmg-popup.effective{color:#ff6348;font-size:2em;animation:dmgFloatBig 1.1s ease-out forwards}
+.dmg-popup.heal{color:#26de81}
+.dmg-popup.miss{color:#636e72;font-size:1.1em}
+@keyframes dmgFloat{
+  0%{opacity:1;transform:translateY(0) scale(1)}
+  60%{opacity:1}
+  100%{opacity:0;transform:translateY(-70px) scale(.7)}
+}
+@keyframes dmgFloatBig{
+  0%{opacity:1;transform:translateY(0) scale(.6)}
+  20%{transform:translateY(-10px) scale(1.3)}
+  40%{transform:translateY(-20px) scale(1)}
+  60%{opacity:1}
+  100%{opacity:0;transform:translateY(-90px) scale(.8)}
+}
+
+/* ==================== SCREEN FLASH ==================== */
+.screen-flash{
+  position:fixed;inset:0;pointer-events:none;z-index:50;
+  animation:flashOnce .3s ease-out forwards;
+}
+.screen-flash.red{background:rgba(255,0,0,.15)}
+.screen-flash.white{background:rgba(255,255,255,.2)}
+@keyframes flashOnce{0%{opacity:1}100%{opacity:0}}
+
+/* ==================== SPRITE ANIMATIONS ==================== */
+@keyframes spriteEnter{
+  from{opacity:0;transform:scale(.3) translateY(30px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
+.sprite.entering{animation:spriteEnter .4s ease-out}
+
+@keyframes spriteAttackRight{
+  0%{transform:translateX(0) rotate(0)}
+  40%{transform:translateX(40px) rotate(5deg)}
+  100%{transform:translateX(0) rotate(0)}
+}
+.sprite.attack-right{animation:spriteAttackRight .2s ease-in-out}
+
+@keyframes spriteAttackLeft{
+  0%{transform:translateX(0) rotate(0)}
+  40%{transform:translateX(-40px) rotate(-5deg)}
+  100%{transform:translateX(0) rotate(0)}
+}
+.sprite.attack-left{animation:spriteAttackLeft .2s ease-in-out}
+.sprite.flip.attack-left{animation:spriteAttackRight .2s ease-in-out}
+
+@keyframes spriteHit{
+  0%{transform:translateX(0)}
+  20%{transform:translateX(8px)}
+  40%{transform:translateX(-8px)}
+  60%{transform:translateX(6px)}
+  80%{transform:translateX(-4px)}
+  100%{transform:translateX(0)}
+}
+.sprite.hit{animation:spriteHit .25s ease}
+
+@keyframes spriteFaint{
+  0%{opacity:1;transform:scale(1) rotate(0)}
+  100%{opacity:0;transform:scale(0) rotate(15deg)}
+}
+.sprite.faint{animation:spriteFaint .5s ease forwards}
+
+@keyframes spriteSwitchOut{
+  0%{opacity:1;transform:scale(1)}
+  100%{opacity:0;transform:scale(.7)}
+}
+.sprite.switch-out{animation:spriteSwitchOut .25s ease forwards}
+
+@keyframes spriteSwitchIn{
+  0%{opacity:0;transform:scale(.7)}
+  100%{opacity:1;transform:scale(1)}
+}
+.sprite.switch-in{animation:spriteSwitchIn .3s ease-out}
+
+/* ==================== RESULT SCENE ==================== */
+.result-scene{text-align:center;z-index:10}
+.result-text{
+  font-size:3.5em;font-weight:900;margin-bottom:20px;
+  animation:resultBounce .6s ease;
+}
+.result-text.win{color:#f1c40f;text-shadow:0 0 30px rgba(241,196,15,.5)}
+.result-text.lose{color:#e84545;text-shadow:0 0 30px rgba(232,69,69,.4)}
+@keyframes resultBounce{
+  0%{transform:scale(0);opacity:0}
+  50%{transform:scale(1.2);opacity:1}
+  70%{transform:scale(.9)}
+  100%{transform:scale(1)}
+}
+.result-panel{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  border-radius:16px;padding:24px 32px;margin-bottom:24px;
+  text-align:left;min-width:300px;
+}
+.result-panel h3{font-size:1.1em;color:rgba(255,255,255,.7);margin-bottom:12px}
+.result-stat{
+  display:flex;justify-content:space-between;padding:6px 0;
+  border-bottom:1px solid rgba(255,255,255,.05);font-size:.95em;
+}
+.result-stat:last-child{border-bottom:none}
+.result-stat .label{color:rgba(255,255,255,.55)}
+.result-stat .value{color:#fff;font-weight:700}
+.result-buttons{display:flex;flex-direction:column;gap:12px;align-items:center}
+
+/* ==================== VICTORY PARTICLES ==================== */
+.victory-particles{position:fixed;inset:0;pointer-events:none;z-index:5;overflow:hidden}
+.v-particle{
+  position:absolute;border-radius:50%;opacity:0;
+  animation:vBurst 1.2s ease-out forwards;
+}
+@keyframes vBurst{
+  0%{transform:translate(0,0) scale(1);opacity:1}
+  100%{opacity:0}
+}
+
+/* ==================== MODAL ==================== */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;
+  display:flex;align-items:center;justify-content:center;
+  animation:fadeIn .25s ease;
+}
+.modal-overlay.hidden{display:none}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{
+  background:linear-gradient(135deg,#1a1a3e,#2d2d5e);
+  border:1px solid rgba(255,255,255,.12);border-radius:18px;
+  padding:28px 32px;max-width:400px;width:90%;
+  animation:modalPop .3s ease;
+}
+@keyframes modalPop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.modal h2{font-size:1.4em;text-align:center;color:#fff;margin-bottom:16px}
+.modal-body{text-align:center;font-size:.95em;color:rgba(255,255,255,.7);margin-bottom:20px;line-height:1.6}
+.modal-footer{display:flex;justify-content:center;gap:12px}
+
+/* ==================== SETTINGS ==================== */
+.settings-scene{max-width:400px;width:100%}
+.settings-scene h2{font-size:1.6em;text-align:center;color:#fff;margin-bottom:24px}
+.settings-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 0;border-bottom:1px solid rgba(255,255,255,.06);
+}
+.settings-item label{font-size:1em;color:rgba(255,255,255,.7)}
+.settings-item select,.settings-item input[type=range]{
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+  color:#fff;padding:6px 12px;border-radius:8px;font-size:.9em;
+}
+.toggle{
+  width:48px;height:26px;border-radius:13px;cursor:pointer;
+  background:rgba(255,255,255,.15);position:relative;transition:background .2s;
+}
+.toggle.on{background:#26de81}
+.toggle .knob{
+  width:22px;height:22px;border-radius:50%;background:#fff;
+  position:absolute;top:2px;left:2px;transition:left .2s;
+}
+.toggle.on .knob{left:24px}
+
+/* ==================== SWITCH MODAL ==================== */
+.switch-modal{z-index:150}
+.switch-pet-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.switch-pet-option{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;border-radius:10px;cursor:pointer;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);
+  transition:all .15s ease;
+}
+.switch-pet-option:hover:not(.disabled){background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2)}
+.switch-pet-option.disabled{opacity:.3;cursor:not-allowed}
+.switch-pet-option .sp-emoji{font-size:1.6em}
+.switch-pet-option .sp-info{flex:1}
+.switch-pet-option .sp-name{font-weight:700;font-size:.95em;color:#fff}
+.switch-pet-option .sp-hp-text{font-size:.8em;color:rgba(255,255,255,.5)}
+
+/* ==================== GACHA SCENE ==================== */
+@keyframes ssr-glow {
+  0% { box-shadow: 0 0 20px rgba(254,211,48,.3), inset 0 0 10px rgba(254,211,48,.1); }
+  100% { box-shadow: 0 0 40px rgba(254,211,48,.6), inset 0 0 20px rgba(254,211,48,.2); }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: .7; }
+}
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+}
