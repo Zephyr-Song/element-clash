@@ -93,7 +93,7 @@ export const STAGES: Stage[] = [
   {
     id: 10,
     name: '神兽试炼·玄武',
-    emoji: '🦎',
+    emoji: '🐊',
     description: '北方玄武镇守幽冥，龟蛇缠绕的不朽壁垒',
     enemyPetIds: [25, 22, 24],   // 青龙、朱雀、白虎
     difficulty: 'insane' as Difficulty,
