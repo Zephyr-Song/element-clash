@@ -170,7 +170,7 @@ export const PETS: Pet[] = [
     rarity: 'SSR',
   },
   {
-    id: 23, name: '玄武', emoji: '🐊', element: 'water', secondaryElement: 'rock',
+    id: 23, name: '玄武', emoji: '🦎', element: 'water', secondaryElement: 'rock',
     baseHp: 120, baseAtk: 65, baseDef: 125, baseSpA: 55, baseSpD: 100, baseSpe: 35,
     trait: 'sturdy', skills: [8, 31, 30, 26],
     description: '北方守护玄武，龟蛇合体坚不可摧',

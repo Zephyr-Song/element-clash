@@ -62,7 +62,7 @@ export const STAGES: Stage[] = [
     difficulty: 'hard' as Difficulty,
     rewardPetId: 12,           // 铁甲机器人
   },
-  // ===== 挑战关卡（极限难度，需通关前6关后逐关解锁） =====
+  // ===== 挑战关卡（噩梦难度，需通关前6关后逐关解锁） =====
   {
     id: 7,
     name: '神兽试炼·朱雀',
@@ -93,7 +93,7 @@ export const STAGES: Stage[] = [
   {
     id: 10,
     name: '神兽试炼·玄武',
-    emoji: '🐊',
+    emoji: '🦎',
     description: '北方玄武镇守幽冥，龟蛇缠绕的不朽壁垒',
     enemyPetIds: [25, 22, 24],   // 青龙、朱雀、白虎
     difficulty: 'insane' as Difficulty,
