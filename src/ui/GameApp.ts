@@ -115,8 +115,8 @@ export class GameApp {
 
       // 难度标签
       const diffTag = document.createElement('span');
-      const diffColors: Record<string, string> = { easy: '#26de81', medium: '#fed330', hard: '#e84545' };
-      const diffNames: Record<string, string> = { easy: '简单', medium: '中等', hard: '困难' };
+      const diffColors: Record<string, string> = { easy: '#26de81', medium: '#fed330', hard: '#e84545', insane: '#ff2e93' };
+      const diffNames: Record<string, string> = { easy: '简单', medium: '中等', hard: '困难', insane: '极限' };
       diffTag.style.cssText = `font-size:.75em;padding:2px 8px;border-radius:8px;color:${diffColors[stage.difficulty]};border:1px solid ${diffColors[stage.difficulty]}44`;
       diffTag.textContent = diffNames[stage.difficulty];
       info.appendChild(diffTag);
@@ -409,8 +409,8 @@ export class GameApp {
     const stageInfo = document.createElement('div');
     stageInfo.style.cssText = 'display:flex;flex-direction:column;gap:8px';
     for (const s of STAGES) {
-      const diffNames: Record<string, string> = { easy: '简单', medium: '中等', hard: '困难' };
-      const diffColors: Record<string, string> = { easy: '#26de81', medium: '#fed330', hard: '#e84545' };
+      const diffNames: Record<string, string> = { easy: '简单', medium: '中等', hard: '困难', insane: '极限' };
+      const diffColors: Record<string, string> = { easy: '#26de81', medium: '#fed330', hard: '#e84545', insane: '#ff2e93' };
       const rewardPet = PETS.find(p => p.id === s.rewardPetId);
       stageInfo.innerHTML += `
         <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.04)">

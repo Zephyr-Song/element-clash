@@ -27,6 +27,7 @@ export function aiDecide(
     case 'easy': return easyDecision(aiParty, playerParty, activeAiIdx, activePlayerIdx);
     case 'medium': return mediumDecision(aiParty, playerParty, activeAiIdx, activePlayerIdx);
     case 'hard': return hardDecision(aiParty, playerParty, activeAiIdx, activePlayerIdx);
+    case 'insane': return hardDecision(aiParty, playerParty, activeAiIdx, activePlayerIdx);
     default: return easyDecision(aiParty, playerParty, activeAiIdx, activePlayerIdx);
   }
 }

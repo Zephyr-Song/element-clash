@@ -189,7 +189,7 @@ export interface Action {
 }
 
 /** AI难度 */
-export type Difficulty = 'easy' | 'medium' | 'hard';
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'insane';
 
 /** 伤害结果 */
 export interface DamageResult {

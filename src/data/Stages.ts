@@ -62,6 +62,34 @@ export const STAGES: Stage[] = [
     difficulty: 'hard' as Difficulty,
     rewardPetId: 12,           // 铁甲机器人
   },
+  // ===== 挑战关卡（极限难度，需通关前6关后逐关解锁） =====
+  {
+    id: 7,
+    name: '神兽试炼·朱雀',
+    emoji: '🔥',
+    description: '烈焰神鸟朱雀降临，唯有强者能将其收服',
+    enemyPetIds: [22, 14, 21],   // 朱雀、深海鲲王、金乌
+    difficulty: 'insane' as Difficulty,
+    rewardPetId: 22,             // 朱雀
+  },
+  {
+    id: 8,
+    name: '神兽试炼·白虎',
+    emoji: '⚡',
+    description: '西方白虎咆哮，金铁交织的死亡风暴',
+    enemyPetIds: [24, 15, 17],   // 白虎、雷霆虎、四不像
+    difficulty: 'insane' as Difficulty,
+    rewardPetId: 24,             // 白虎
+  },
+  {
+    id: 9,
+    name: '四象归一·终极试炼',
+    emoji: '🌟',
+    description: '青龙、玄武、麒麟齐聚，四象之力的终极考验',
+    enemyPetIds: [25, 23, 26],   // 青龙、玄武、麒麟
+    difficulty: 'insane' as Difficulty,
+    rewardPetId: 27,             // 九尾狐
+  },
 ];
 
 /** 初始可用精灵ID（无需通关解锁） */
