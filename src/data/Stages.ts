@@ -1,6 +1,6 @@
 /**
  * Stages.ts - 关卡数据
- * 6个递增难度的关卡，每关有固定敌方队伍和通关奖励精灵
+ * 6个基础关卡 + 5个挑战关卡，每关有固定敌方队伍和通关奖励精灵
  */
 
 import type { Stage, Difficulty } from './types';
@@ -89,6 +89,24 @@ export const STAGES: Stage[] = [
     enemyPetIds: [25, 23, 26],   // 青龙、玄武、麒麟
     difficulty: 'insane' as Difficulty,
     rewardPetId: 26,             // 麒麟
+  },
+  {
+    id: 10,
+    name: '神兽试炼·青龙',
+    emoji: '🐉',
+    description: '东方青龙腾云驾雾，掌控江河湖海之力',
+    enemyPetIds: [22, 24, 26],   // 朱雀、白虎、麒麟
+    difficulty: 'insane' as Difficulty,
+    rewardPetId: 25,             // 青龙
+  },
+  {
+    id: 11,
+    name: '神兽试炼·玄武',
+    emoji: '🐊',
+    description: '北方玄武镇守幽冥，龟蛇缠绕的不朽壁垒',
+    enemyPetIds: [25, 22, 24],   // 青龙、朱雀、白虎
+    difficulty: 'insane' as Difficulty,
+    rewardPetId: 23,             // 玄武
   },
 ];
 
