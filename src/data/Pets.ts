@@ -163,21 +163,21 @@ export const PETS: Pet[] = [
   },
   // ===== 四象神兽 + 中国神兽（挑战关卡奖励 / 召唤获取） =====
   {
-    id: 22, name: '朱雀', emoji: '🦅', element: 'fire', secondaryElement: 'flying',
+    id: 22, name: '朱雀', emoji: '🦚', element: 'fire', secondaryElement: 'flying',
     baseHp: 85, baseAtk: 70, baseDef: 65, baseSpA: 120, baseSpD: 75, baseSpe: 115,
     trait: 'blaze', skills: [49, 63, 35, 2],
     description: '南方神鸟朱雀，浴火重生焚天烈焰',
     rarity: 'SSR',
   },
   {
-    id: 23, name: '玄武', emoji: '🐢', element: 'water', secondaryElement: 'rock',
+    id: 23, name: '玄武', emoji: '🐊', element: 'water', secondaryElement: 'rock',
     baseHp: 120, baseAtk: 65, baseDef: 125, baseSpA: 55, baseSpD: 100, baseSpe: 35,
     trait: 'sturdy', skills: [8, 31, 30, 26],
     description: '北方守护玄武，龟蛇合体坚不可摧',
     rarity: 'SSR',
   },
   {
-    id: 24, name: '白虎', emoji: '🐯', element: 'steel', secondaryElement: 'fighting',
+    id: 24, name: '白虎', emoji: '🐅', element: 'steel', secondaryElement: 'fighting',
     baseHp: 90, baseAtk: 125, baseDef: 85, baseSpA: 60, baseSpD: 70, baseSpe: 100,
     trait: 'intimidate', skills: [33, 60, 34, 35],
     description: '西方猛兽白虎，金戈铁爪横扫千军',

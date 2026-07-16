@@ -8,7 +8,7 @@ import { PETS } from '../data/Pets';
 const SAVE_KEY = 'element_clash_save';
 
 /** 抽卡精灵ID列表 */
-export const GACHA_PET_IDS = [13, 14, 15, 16, 17, 18, 23, 25, 26];
+export const GACHA_PET_IDS = [13, 14, 15, 16, 17, 18];
 
 /** 抽卡消耗 */
 export const GACHA_SINGLE_COST = 200;
