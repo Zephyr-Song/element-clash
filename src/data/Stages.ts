@@ -1,6 +1,6 @@
 /**
  * Stages.ts - 关卡数据
- * 6个基础关卡 + 5个挑战关卡，每关有固定敌方队伍和通关奖励精灵
+ * 6个基础关卡 + 4个挑战关卡，每关有固定敌方队伍和通关奖励精灵
  */
 
 import type { Stage, Difficulty } from './types';
@@ -83,15 +83,6 @@ export const STAGES: Stage[] = [
   },
   {
     id: 9,
-    name: '四象归一·终极试炼',
-    emoji: '🌟',
-    description: '青龙、玄武、麒麟齐聚，四象之力的终极考验',
-    enemyPetIds: [25, 23, 26],   // 青龙、玄武、麒麟
-    difficulty: 'insane' as Difficulty,
-    rewardPetId: 26,             // 麒麟
-  },
-  {
-    id: 10,
     name: '神兽试炼·青龙',
     emoji: '🐉',
     description: '东方青龙腾云驾雾，掌控江河湖海之力',
@@ -100,7 +91,7 @@ export const STAGES: Stage[] = [
     rewardPetId: 25,             // 青龙
   },
   {
-    id: 11,
+    id: 10,
     name: '神兽试炼·玄武',
     emoji: '🐊',
     description: '北方玄武镇守幽冥，龟蛇缠绕的不朽壁垒',

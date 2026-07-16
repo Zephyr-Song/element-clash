@@ -163,7 +163,7 @@ export const PETS: Pet[] = [
   },
   // ===== 四象神兽 + 中国神兽（挑战关卡奖励 / 召唤获取） =====
   {
-    id: 22, name: '朱雀', emoji: '🦚', element: 'fire', secondaryElement: 'flying',
+    id: 22, name: '朱雀', emoji: '🐦‍🔥', element: 'fire', secondaryElement: 'flying',
     baseHp: 85, baseAtk: 70, baseDef: 65, baseSpA: 120, baseSpD: 75, baseSpe: 115,
     trait: 'blaze', skills: [49, 63, 35, 2],
     description: '南方神鸟朱雀，浴火重生焚天烈焰',
