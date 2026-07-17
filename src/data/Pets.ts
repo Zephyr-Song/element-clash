@@ -117,10 +117,10 @@ export const PETS: Pet[] = [
     rarity: 'SR',
   },
   {
-    id: 16, name: '暗影龟', emoji: '🐢', element: 'dark', secondaryElement: 'psychic',
+    id: 16, name: '墨墨龟', emoji: '🐢', element: 'dark', secondaryElement: 'psychic',
     baseHp: 80, baseAtk: 65, baseDef: 60, baseSpA: 110, baseSpD: 70, baseSpe: 100,
     trait: 'intimidate', skills: [55, 56, 39, 40],
-    description: '暗影神龟，上场即威吓对手',
+    description: '墨墨神龟，上场即威吓对手',
     rarity: 'SR',
   },
   {
