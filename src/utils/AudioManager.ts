@@ -143,21 +143,21 @@ class AudioManagerClass {
   private bgmMelodyNextTime: number = 0;
   private bgmBassNextTime: number = 0;
 
-  /** 八分音符时值（秒） */
-  private static readonly STEP: number = 0.26;
+  /** 八分音符时值（秒），越大越舒缓 */
+  private static readonly STEP: number = 0.42;
   /** 调度提前量 */
   private static readonly LOOKAHEAD: number = 0.2;
 
-  // 主旋律：C大调，和弦进行 C - G - Am - F，每音符为一个八分音符(dur=1)
+  // 主旋律：C大调轻音乐，和弦进行 C - G - Am - F，低八度更柔和，每和弦末尾留白(休止符 midi:0)
   private static readonly BGM_MELODY: Array<{ midi: number; dur: number }> = [
-    { midi: 72, dur: 1 }, { midi: 76, dur: 1 }, { midi: 79, dur: 1 }, { midi: 84, dur: 1 },
-    { midi: 79, dur: 1 }, { midi: 83, dur: 1 }, { midi: 86, dur: 1 }, { midi: 83, dur: 1 },
-    { midi: 69, dur: 1 }, { midi: 72, dur: 1 }, { midi: 76, dur: 1 }, { midi: 81, dur: 1 },
-    { midi: 77, dur: 1 }, { midi: 81, dur: 1 }, { midi: 84, dur: 1 }, { midi: 81, dur: 1 },
-    { midi: 72, dur: 1 }, { midi: 76, dur: 1 }, { midi: 79, dur: 1 }, { midi: 84, dur: 1 },
-    { midi: 79, dur: 1 }, { midi: 83, dur: 1 }, { midi: 86, dur: 1 }, { midi: 83, dur: 1 },
-    { midi: 69, dur: 1 }, { midi: 72, dur: 1 }, { midi: 76, dur: 1 }, { midi: 81, dur: 1 },
-    { midi: 77, dur: 1 }, { midi: 81, dur: 1 }, { midi: 84, dur: 1 }, { midi: 81, dur: 1 },
+    { midi: 72, dur: 1 }, { midi: 76, dur: 1 }, { midi: 79, dur: 1 }, { midi: 0, dur: 1 },
+    { midi: 71, dur: 1 }, { midi: 74, dur: 1 }, { midi: 79, dur: 1 }, { midi: 0, dur: 1 },
+    { midi: 69, dur: 1 }, { midi: 72, dur: 1 }, { midi: 76, dur: 1 }, { midi: 0, dur: 1 },
+    { midi: 65, dur: 1 }, { midi: 69, dur: 1 }, { midi: 72, dur: 1 }, { midi: 0, dur: 1 },
+    { midi: 72, dur: 1 }, { midi: 76, dur: 1 }, { midi: 79, dur: 1 }, { midi: 0, dur: 1 },
+    { midi: 71, dur: 1 }, { midi: 74, dur: 1 }, { midi: 79, dur: 1 }, { midi: 0, dur: 1 },
+    { midi: 69, dur: 1 }, { midi: 72, dur: 1 }, { midi: 76, dur: 1 }, { midi: 0, dur: 1 },
+    { midi: 65, dur: 1 }, { midi: 69, dur: 1 }, { midi: 72, dur: 1 }, { midi: 0, dur: 1 },
   ];
 
   // 低音：每 4 个八分音符换一个根音(dur=4)，与主旋律循环等长(16秒)
@@ -200,23 +200,23 @@ class AudioManagerClass {
   private scheduleBgm(): void {
     let ctx: AudioContext;
     try { ctx = this.getContext(); } catch { return; }
-    // 主旋律轨道
+    // 主旋律轨道（柔和正弦波 + 较长延音）
     while (this.bgmMelodyNextTime < ctx.currentTime + AudioManagerClass.LOOKAHEAD) {
       const note = AudioManagerClass.BGM_MELODY[this.bgmMelodyIdx % AudioManagerClass.BGM_MELODY.length];
-      this.scheduleBgmNote(note, this.bgmMelodyNextTime, 'square', this._bgmVolume * 0.5);
+      this.scheduleBgmNote(note, this.bgmMelodyNextTime, 'sine', this._bgmVolume * 0.45, 1.8);
       this.bgmMelodyNextTime += note.dur * AudioManagerClass.STEP;
       this.bgmMelodyIdx++;
     }
-    // 低音轨道
+    // 低音轨道（柔和正弦波）
     while (this.bgmBassNextTime < ctx.currentTime + AudioManagerClass.LOOKAHEAD) {
       const note = AudioManagerClass.BGM_BASS[this.bgmBassIdx % AudioManagerClass.BGM_BASS.length];
-      this.scheduleBgmNote(note, this.bgmBassNextTime, 'triangle', this._bgmVolume * 0.7);
+      this.scheduleBgmNote(note, this.bgmBassNextTime, 'sine', this._bgmVolume * 0.4, 1.0);
       this.bgmBassNextTime += note.dur * AudioManagerClass.STEP;
       this.bgmBassIdx++;
     }
   }
 
-  private scheduleBgmNote(note: { midi: number; dur: number }, time: number, type: OscillatorType, vol: number): void {
+  private scheduleBgmNote(note: { midi: number; dur: number }, time: number, type: OscillatorType, vol: number, releaseMul: number = 1): void {
     if (note.midi <= 0) return; // 休止符
     try {
       const ctx = this.getContext();
@@ -225,14 +225,15 @@ class AudioManagerClass {
       const gain = ctx.createGain();
       osc.type = type;
       osc.frequency.setValueAtTime(freq, time);
-      const dur = note.dur * AudioManagerClass.STEP * 0.92;
+      const dur = note.dur * AudioManagerClass.STEP;
+      const release = dur * releaseMul;
       gain.gain.setValueAtTime(0.0001, time);
-      gain.gain.linearRampToValueAtTime(Math.max(0.0002, vol), time + 0.012);
-      gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+      gain.gain.linearRampToValueAtTime(Math.max(0.0002, vol), time + 0.04); // 柔和起音，避免咔哒声
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + release); // 缓慢衰减，余韵绵长
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(time);
-      osc.stop(time + dur + 0.03);
+      osc.stop(time + release + 0.05);
     } catch { /* ignore */ }
   }
 }

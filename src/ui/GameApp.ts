@@ -36,6 +36,11 @@ export class GameApp {
     AudioManager.setEnabled(save.soundEnabled);
     AudioManager.setBgmVolume(save.bgmVolume);
     AudioManager.setBgmEnabled(save.bgmEnabled);
+    // 旧版默认音量偏大，统一调小（仅当玩家尚未手动调整过音量时）
+    if (save.bgmVolume === 0.4) {
+      AudioManager.setBgmVolume(0.22);
+      saveSave({ ...save, bgmVolume: 0.22 });
+    }
     // 浏览器自动播放策略：音频需用户手势后才能发声，首次交互时启动 BGM
     this.container.addEventListener('pointerdown', () => {
       AudioManager.startBgm();
