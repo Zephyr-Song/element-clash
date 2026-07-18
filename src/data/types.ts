@@ -315,6 +315,14 @@ export interface GachaResult {
   isNew: boolean; // 是否新解锁
 }
 
+/** 任务进度 */
+export interface TaskProgress {
+  dailyDate: string;   // 上次刷新每日任务的日期(ISO)
+  weeklyDate: string;  // 上次刷新每周任务的周一日期(ISO)
+  progress: Record<string, number>; // taskId -> 当前完成进度
+  claimed: string[];   // 已领取奖励的 taskId 列表
+}
+
 /** 存档数据 */
 export interface SaveData {
   wins: number;
@@ -330,4 +338,7 @@ export interface SaveData {
   gacha90RewardCollected: boolean; // 是否已领取累计抽90抽大圣奖励
   checkInRewardCollected: boolean; // 是否已领取签到3天奖励
   checkInReward7Collected: boolean; // 是否已领取签到7天奖励
+  bag: Record<number, number>;      // 道具背包(itemId -> 数量)
+  tasks: TaskProgress;              // 每日/周常任务进度
+  achievements: Record<number, boolean>; // 成就解锁状态(achId -> 是否解锁)
 }

@@ -14,6 +14,9 @@ export class MainMenuScene {
   private onOpenGuide: () => void;
   private onOpenGacha: () => void;
   private onOpenCheckIn: () => void;
+  private onOpenTasks: () => void;
+  private onOpenAchievements: () => void;
+  private onOpenBag: () => void;
 
   constructor(
     onStartBattle: () => void,
@@ -22,6 +25,9 @@ export class MainMenuScene {
     onOpenGuide: () => void,
     onOpenGacha: () => void,
     onOpenCheckIn: () => void,
+    onOpenTasks: () => void,
+    onOpenAchievements: () => void,
+    onOpenBag: () => void,
   ) {
     this.onStartBattle = onStartBattle;
     this.onOpenPokedex = onOpenPokedex;
@@ -29,6 +35,9 @@ export class MainMenuScene {
     this.onOpenGuide = onOpenGuide;
     this.onOpenGacha = onOpenGacha;
     this.onOpenCheckIn = onOpenCheckIn;
+    this.onOpenTasks = onOpenTasks;
+    this.onOpenAchievements = onOpenAchievements;
+    this.onOpenBag = onOpenBag;
 
     this.el = document.createElement('div');
     this.el.className = 'scene main-menu';
@@ -71,6 +80,9 @@ export class MainMenuScene {
         <button class="btn btn-secondary" id="btn-guide">📖 玩法介绍</button>
         <button class="btn btn-secondary" id="btn-pokedex">📕 宠物图鉴</button>
         <button class="btn btn-secondary" id="btn-settings">⚙️ 游戏设置</button>
+        <button class="btn btn-secondary" id="btn-tasks">📋 每日任务</button>
+        <button class="btn btn-secondary" id="btn-achievements">🏅 成就</button>
+        <button class="btn btn-secondary" id="btn-bag">🎒 背包</button>
       </div>
       <div class="main-info">
         <span>🗺️ 关卡: ${save.completedStages.length}/${STAGES.length}</span>
@@ -104,6 +116,18 @@ export class MainMenuScene {
     this.el.querySelector('#btn-settings')!.addEventListener('click', () => {
       AudioManager.playClickSound();
       this.onOpenSettings();
+    });
+    this.el.querySelector('#btn-tasks')!.addEventListener('click', () => {
+      AudioManager.playClickSound();
+      this.onOpenTasks();
+    });
+    this.el.querySelector('#btn-achievements')!.addEventListener('click', () => {
+      AudioManager.playClickSound();
+      this.onOpenAchievements();
+    });
+    this.el.querySelector('#btn-bag')!.addEventListener('click', () => {
+      AudioManager.playClickSound();
+      this.onOpenBag();
     });
   }
 

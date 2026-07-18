@@ -8,6 +8,7 @@ import type {
   BattleState, Action, BattleEvent, BattleConfig, Pet, Difficulty,
 } from '../data/types';
 import { getSkillById } from '../data/Skills';
+import { getItemById, getItemHealRatio } from '../data/Items';
 import {
   createInitialState, checkBattleEnd, hasAlivePets, getFirstAliveIdx,
   getEffectiveSpeed,
@@ -597,19 +598,20 @@ export class BattleEngine {
    */
   private async handleItemUse(
     state: BattleState,
-    _itemId: number,
+    itemId: number,
     events: BattleEvent[],
   ): Promise<void> {
     const target = state.playerParty[state.playerActiveIdx];
-    // 简化：道具固定回复maxHP的30%
-    const healAmount = Math.floor(target.maxHp * 0.3);
+    const item = getItemById(itemId);
+    const ratio = item ? getItemHealRatio(item.type) : 0.3;
+    const healAmount = Math.floor(target.maxHp * ratio);
     target.currentHp = Math.min(target.maxHp, target.currentHp + healAmount);
 
     events.push({
       type: 'item_use',
       side: 'player',
       petName: target.pet.name,
-      itemName: '回复药水',
+      itemName: item ? item.name : '回复药水',
       healAmount,
     });
     events.push({

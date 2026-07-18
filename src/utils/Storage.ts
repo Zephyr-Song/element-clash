@@ -2,8 +2,11 @@
  * Storage.ts - localStorage 存档管理
  */
 
-import type { SaveData, GachaResult, GachaRarity } from '../data/types';
+import type { SaveData, GachaResult, GachaRarity, Item } from '../data/types';
 import { PETS } from '../data/Pets';
+import { DAILY_TASKS, WEEKLY_TASKS, type TaskMetric, type TaskTemplate } from '../data/Tasks';
+import { ACHIEVEMENTS } from '../data/Achievements';
+import { getItemById } from '../data/Items';
 
 const SAVE_KEY = 'element_clash_save';
 
@@ -46,6 +49,9 @@ const DEFAULT_SAVE: SaveData = {
   gacha90RewardCollected: false,
   checkInRewardCollected: false,
   checkInReward7Collected: false,
+  bag: {},
+  tasks: { dailyDate: '', weeklyDate: '', progress: {}, claimed: [] },
+  achievements: {},
 };
 
 export function loadSave(): SaveData {
@@ -70,8 +76,13 @@ export function saveSave(data: SaveData): void {
 
 export function updateRecord(won: boolean): SaveData {
   const save = loadSave();
-  if (won) { save.wins++; }
-  else { save.losses++; }
+  if (won) {
+    save.wins++;
+    incrementTaskMetric(save, 'win');
+    checkAchievements(save);
+  } else {
+    save.losses++;
+  }
   saveSave(save);
   return save;
 }
@@ -87,8 +98,11 @@ export function completeStage(stageId: number): void {
   const save = loadSave();
   if (!save.completedStages.includes(stageId)) {
     save.completedStages.push(stageId);
-    saveSave(save);
   }
+  refreshTasks(save);
+  incrementTaskMetric(save, 'stage');
+  checkAchievements(save);
+  saveSave(save);
 }
 
 /** 检查今天是否已签到 */
@@ -121,6 +135,10 @@ export function checkIn(): number {
 
   save.coins += reward;
   save.lastCheckIn = today;
+  refreshTasks(save);
+  incrementTaskMetric(save, 'checkin');
+  checkAchievements(save);
+  addItem(1, 1); // 每日签到赠送1个回复药水
   saveSave(save);
   return reward;
 }
@@ -161,6 +179,9 @@ export function drawGachaSingle(): GachaResult {
     save.gachaPets.push(result.petId);
   }
   save.totalDraws += 1; // 累计抽卡次数+1
+  refreshTasks(save);
+  incrementTaskMetric(save, 'gacha');
+  checkAchievements(save);
   saveSave(save);
   return result;
 }
@@ -179,6 +200,9 @@ export function drawGachaTen(): GachaResult[] {
     }
   }
   save.totalDraws += 10; // 十连计10次
+  refreshTasks(save);
+  incrementTaskMetric(save, 'gacha');
+  checkAchievements(save);
   saveSave(save);
   return results;
 }
@@ -268,4 +292,162 @@ export function claimCheckInReward7(): void {
   save.checkInReward7Collected = true;
   saveSave(save);
 }
+
+// ==================== 道具背包 ====================
+
+/** 获得道具（默认+1） */
+export function addItem(itemId: number, count = 1): void {
+  const save = loadSave();
+  save.bag[itemId] = (save.bag[itemId] || 0) + count;
+  saveSave(save);
+}
+
+/** 消耗道具，数量不足返回 false */
+export function consumeItem(itemId: number, count = 1): boolean {
+  const save = loadSave();
+  if ((save.bag[itemId] || 0) < count) return false;
+  save.bag[itemId] -= count;
+  if (save.bag[itemId] <= 0) delete save.bag[itemId];
+  saveSave(save);
+  return true;
+}
+
+/** 读取背包中实际拥有的道具列表 */
+export function getBagItems(): { item: Item; count: number }[] {
+  const save = loadSave();
+  const items: { item: Item; count: number }[] = [];
+  for (const [idStr, count] of Object.entries(save.bag)) {
+    const item = getItemById(Number(idStr));
+    if (item && count > 0) items.push({ item, count });
+  }
+  return items;
+}
+
+// ==================== 任务系统 ====================
+
+/** 今日日期字符串(ISO) */
+function getTodayStr(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/** 本周一日期字符串(ISO) */
+function getWeekStartStr(): string {
+  const d = new Date();
+  const day = (d.getDay() + 6) % 7; // 周一=0
+  d.setDate(d.getDate() - day);
+  return d.toISOString().slice(0, 10);
+}
+
+/** 按日期刷新每日/周常任务进度（每日0点/每周一0点重置） */
+export function refreshTasks(save: SaveData): void {
+  const today = getTodayStr();
+  const week = getWeekStartStr();
+  let changed = false;
+  if (save.tasks.dailyDate !== today) {
+    save.tasks.dailyDate = today;
+    for (const t of DAILY_TASKS) save.tasks.progress[t.id] = 0;
+    save.tasks.claimed = save.tasks.claimed.filter(id => WEEKLY_TASKS.some(w => w.id === id));
+    changed = true;
+  }
+  if (save.tasks.weeklyDate !== week) {
+    save.tasks.weeklyDate = week;
+    for (const t of WEEKLY_TASKS) save.tasks.progress[t.id] = 0;
+    save.tasks.claimed = save.tasks.claimed.filter(id => DAILY_TASKS.some(d => d.id === id));
+    changed = true;
+  }
+  if (changed) saveSave(save);
+}
+
+/** 累加指定指标的任务进度 */
+function incrementTaskMetric(save: SaveData, metric: TaskMetric): void {
+  const all = [...DAILY_TASKS, ...WEEKLY_TASKS];
+  for (const t of all) {
+    if (t.metric !== metric) continue;
+    const cur = save.tasks.progress[t.id] || 0;
+    if (cur < t.target) save.tasks.progress[t.id] = cur + 1;
+  }
+}
+
+/** 检查并解锁满足条件的成就（自动发放金币奖励），返回本次新解锁的成就 */
+export function checkAchievements(save: SaveData): { id: number; name: string }[] {
+  const unlockedNow: { id: number; name: string }[] = [];
+  for (const a of ACHIEVEMENTS) {
+    if (!save.achievements[a.id] && a.check(save)) {
+      save.achievements[a.id] = true;
+      if (a.rewardCoins) save.coins += a.rewardCoins;
+      unlockedNow.push({ id: a.id, name: a.name });
+    }
+  }
+  if (unlockedNow.length) saveSave(save);
+  return unlockedNow;
+}
+
+/** 领取任务奖励（进度达标且未领取时发放金币） */
+export function claimTask(taskId: string): boolean {
+  const save = loadSave();
+  const t = [...DAILY_TASKS, ...WEEKLY_TASKS].find(x => x.id === taskId);
+  if (!t) return false;
+  const prog = save.tasks.progress[taskId] || 0;
+  if (prog < t.target) return false;
+  if (save.tasks.claimed.includes(taskId)) return false;
+  save.coins += t.rewardCoins;
+  save.tasks.claimed.push(taskId);
+  saveSave(save);
+  return true;
+}
+
+/** 任务状态（含进度/可领取标记） */
+export interface TaskStatus {
+  id: string;
+  name: string;
+  description: string;
+  target: number;
+  progress: number;
+  rewardCoins: number;
+  claimed: boolean;
+  canClaim: boolean;
+}
+
+/** 获取每日/周常任务状态列表 */
+export function getTaskStatuses(): { daily: TaskStatus[]; weekly: TaskStatus[] } {
+  const save = loadSave();
+  refreshTasks(save);
+  const map = (list: TaskTemplate[]): TaskStatus[] => list.map(t => {
+    const progress = Math.min(save.tasks.progress[t.id] || 0, t.target);
+    const claimed = save.tasks.claimed.includes(t.id);
+    return {
+      id: t.id,
+      name: t.name,
+      description: t.description,
+      target: t.target,
+      progress,
+      rewardCoins: t.rewardCoins,
+      claimed,
+      canClaim: progress >= t.target && !claimed,
+    };
+  });
+  return { daily: map(DAILY_TASKS), weekly: map(WEEKLY_TASKS) };
+}
+
+/** 成就状态 */
+export interface AchievementStatus {
+  id: number;
+  name: string;
+  description: string;
+  unlocked: boolean;
+  rewardCoins: number;
+}
+
+/** 获取成就状态列表 */
+export function getAchievementStatuses(): AchievementStatus[] {
+  const save = loadSave();
+  return ACHIEVEMENTS.map(a => ({
+    id: a.id,
+    name: a.name,
+    description: a.description,
+    unlocked: !!save.achievements[a.id],
+    rewardCoins: a.rewardCoins,
+  }));
+}
+
 

@@ -86,7 +86,7 @@ export const STAGES: Stage[] = [
     name: '神兽试炼·青龙',
     emoji: '🐉',
     description: '东方青龙腾云驾雾，掌控江河湖海之力',
-    enemyPetIds: [22, 24, 26],   // 朱雀、白虎、麒麟
+    enemyPetIds: [22, 24, 26],   // 朱雀、白虎、白金独角兽
     difficulty: 'insane' as Difficulty,
     rewardPetId: 25,             // 青龙
   },

@@ -191,10 +191,10 @@ export const PETS: Pet[] = [
     rarity: 'SSR',
   },
   {
-    id: 26, name: '麒麟', emoji: '🦄', element: 'grass', secondaryElement: 'psychic',
+    id: 26, name: '白金独角兽', emoji: '🦄', element: 'grass', secondaryElement: 'psychic',
     baseHp: 95, baseAtk: 90, baseDef: 95, baseSpA: 100, baseSpD: 95, baseSpe: 90,
     trait: 'natural_cure', skills: [12, 40, 9, 10],
-    description: '仁兽麒麟，祥瑞之光治愈万物',
+    description: '稀世独角兽，祥瑞之光治愈万物',
     rarity: 'SSR',
   },
 ];

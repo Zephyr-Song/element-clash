@@ -15,6 +15,7 @@ import { ActionLog } from './components/ActionLog';
 import { DamagePopup } from './components/DamagePopup';
 import { AudioManager } from '../utils/AudioManager';
 import { delay } from '../utils/helpers';
+import { getBagItems, consumeItem } from '../utils/Storage';
 import { TRAITS } from '../data/Traits';
 
 export class BattleScene {
@@ -105,7 +106,7 @@ export class BattleScene {
     const actionBar = document.createElement('div');
     actionBar.className = 'action-bar';
     actionBar.innerHTML = `
-      <button class="btn btn-sm btn-secondary" id="btn-item">🎒 回复药水</button>
+      <button class="btn btn-sm btn-secondary" id="btn-item">🎒 道具</button>
       <button class="btn btn-sm btn-secondary" id="btn-switch">🔄 切换宠物</button>
     `;
     this.el.appendChild(actionBar);
@@ -281,7 +282,11 @@ export class BattleScene {
     });
     const itemBtn = this.el.querySelector('#btn-item') as HTMLButtonElement;
     const switchBtn = this.el.querySelector('#btn-switch') as HTMLButtonElement;
-    if (itemBtn) itemBtn.disabled = !enabled;
+    if (itemBtn) {
+      const total = getBagItems().reduce((s, b) => s + b.count, 0);
+      itemBtn.disabled = !enabled || total === 0;
+      itemBtn.textContent = total === 0 ? '🎒 无道具' : `🎒 道具 (${total})`;
+    }
     if (switchBtn) switchBtn.disabled = !enabled;
   }
 
@@ -299,7 +304,57 @@ export class BattleScene {
 
   private useItem(): void {
     if (this.isProcessing) return;
-    this.executeAction({ type: 'item', itemId: 1 });
+    this.openItemModal();
+  }
+
+  /** 打开道具选择面板，从背包消耗真实道具并生效 */
+  private openItemModal(): void {
+    if (this.isProcessing || !this.state) return;
+    const bag = getBagItems();
+    if (bag.length === 0) return;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay switch-modal';
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `<h2>🎒 使用道具</h2><div class="modal-body">选择要使用的道具，恢复当前出战精灵</div>`;
+
+    const list = document.createElement('div');
+    list.className = 'switch-pet-list';
+    for (const { item, count } of bag) {
+      const option = document.createElement('div');
+      option.className = 'switch-pet-option';
+      const emoji = item.type === 'fullRestore' ? '💊' : item.type === 'superPotion' ? '🧪' : '🥤';
+      option.innerHTML = `
+        <span class="sp-emoji">${emoji}</span>
+        <div class="sp-info">
+          <div class="sp-name">${item.name} ×${count}</div>
+          <div class="sp-hp">${item.description}</div>
+        </div>
+      `;
+      option.addEventListener('click', () => {
+        AudioManager.playClickSound();
+        this.removeOverlay(overlay);
+        if (consumeItem(item.id, 1)) {
+          this.executeAction({ type: 'item', itemId: item.id });
+        }
+      });
+      list.appendChild(option);
+    }
+    modal.appendChild(list);
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'btn btn-sm btn-secondary';
+    closeBtn.textContent = '取消';
+    closeBtn.addEventListener('click', () => this.removeOverlay(overlay));
+    modal.appendChild(closeBtn);
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) this.removeOverlay(overlay);
+    });
+
+    overlay.appendChild(modal);
+    this.el.appendChild(overlay);
   }
 
   private openSwitchModal(): void {

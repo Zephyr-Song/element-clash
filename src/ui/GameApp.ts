@@ -5,7 +5,7 @@
 import type { Pet, BattleState, SceneType, Difficulty } from '../data/types';
 import { PETS } from '../data/Pets';
 import { STAGES, getEnemyPets, getUnlockedPetIds, STARTER_PET_IDS } from '../data/Stages';
-import { loadSave, saveSave, updateRecord, isStageCompleted, completeStage, checkIn, getCheckInInfo, GACHA_PET_IDS, canClaimCheckInReward, claimCheckInReward, CHECKIN_REWARD_PET_ID, CHECKIN_REWARD_STREAK, canClaimCheckInReward7, claimCheckInReward7, CHECKIN_REWARD_PET_ID_7, CHECKIN_REWARD_STREAK_7 } from '../utils/Storage';
+import { loadSave, saveSave, updateRecord, isStageCompleted, completeStage, checkIn, getCheckInInfo, GACHA_PET_IDS, canClaimCheckInReward, claimCheckInReward, CHECKIN_REWARD_PET_ID, CHECKIN_REWARD_STREAK, canClaimCheckInReward7, claimCheckInReward7, CHECKIN_REWARD_PET_ID_7, CHECKIN_REWARD_STREAK_7, getTaskStatuses, claimTask, getAchievementStatuses, getBagItems, consumeItem, addItem, type TaskStatus, type AchievementStatus } from '../utils/Storage';
 import { AudioManager } from '../utils/AudioManager';
 import { ELEMENT_NAMES, ELEMENT_COLORS, ELEMENT_EMOJIS } from '../data/types';
 import { getEffectiveness } from '../data/Elements';
@@ -46,6 +46,9 @@ export class GameApp {
       () => this.showGuide(),
       () => this.showGacha(),
       () => this.showCheckIn(),
+      () => this.showTasks(),
+      () => this.showAchievements(),
+      () => this.showBag(),
     ), 'main-menu');
   }
 
@@ -228,7 +231,9 @@ export class GameApp {
     // 更新战绩和关卡进度
     updateRecord(isWin);
     if (isWin) {
+      const firstClear = !isCompleted;
       completeStage(stageId);
+      if (firstClear) addItem(1, 1); // 首次通关赠送1个回复药水
     }
 
     this.switchScene(scene, 'result');
@@ -733,6 +738,166 @@ export class GameApp {
     scene.appendChild(backBtn);
 
     this.switchSceneRaw(scene, 'checkin');
+  }
+
+  /** 显示每日/周常任务 */
+  private showTasks(): void {
+    const { daily, weekly } = getTaskStatuses();
+    const scene = document.createElement('div');
+    scene.className = 'scene';
+    scene.style.cssText = 'overflow-y:auto;padding:30px 20px';
+
+    const title = document.createElement('h2');
+    title.style.cssText = 'font-size:1.6em;color:#fff;margin-bottom:16px;text-align:center';
+    title.textContent = '📋 每日 / 周常任务';
+    scene.appendChild(title);
+
+    const renderList = (label: string, list: TaskStatus[]): void => {
+      const secTitle = document.createElement('div');
+      secTitle.style.cssText = 'font-size:1.05em;color:#fed330;margin:14px 0 8px;font-weight:700';
+      secTitle.textContent = label;
+      scene.appendChild(secTitle);
+
+      for (const t of list) {
+        const card = document.createElement('div');
+        card.style.cssText = `margin-bottom:10px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid ${t.canClaim ? '#26de81' : 'rgba(255,255,255,.08)'}`;
+        const pct = Math.floor((t.progress / t.target) * 100);
+        card.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-weight:700;color:#fff">${t.name} <span style="font-size:.75em;color:rgba(255,255,255,.4)">🪙${t.rewardCoins}</span></div>
+            <div style="font-size:.8em;color:rgba(255,255,255,.5)">${t.progress}/${t.target}</div>
+          </div>
+          <div style="font-size:.82em;color:rgba(255,255,255,.5);margin:4px 0 8px">${t.description}</div>
+          <div style="height:6px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#26de81,#4facfe)"></div>
+          </div>
+        `;
+        if (t.canClaim) {
+          const btn = document.createElement('button');
+          btn.className = 'btn btn-sm btn-primary';
+          btn.style.cssText = 'margin-top:8px;width:100%';
+          btn.textContent = '🎁 领取奖励';
+          btn.addEventListener('click', () => {
+            AudioManager.playClickSound();
+            if (claimTask(t.id)) this.showTasks();
+          });
+          card.appendChild(btn);
+        } else if (t.claimed) {
+          const done = document.createElement('div');
+          done.style.cssText = 'margin-top:8px;font-size:.8em;color:#26de81;text-align:center';
+          done.textContent = '✅ 已领取';
+          card.appendChild(done);
+        }
+        scene.appendChild(card);
+      }
+    };
+
+    renderList('🔄 每日任务（每日0点刷新）', daily);
+    renderList('🗓️ 周常任务（每周一0点刷新）', weekly);
+
+    const backBtn = document.createElement('button');
+    backBtn.className = 'btn btn-secondary';
+    backBtn.style.cssText = 'margin-top:20px';
+    backBtn.textContent = '🏠 返回';
+    backBtn.addEventListener('click', () => {
+      AudioManager.playClickSound();
+      this.showMainMenu();
+    });
+    scene.appendChild(backBtn);
+
+    this.switchSceneRaw(scene, 'main-menu');
+  }
+
+  /** 显示成就墙 */
+  private showAchievements(): void {
+    const list = getAchievementStatuses();
+    const unlocked = list.filter(a => a.unlocked).length;
+    const scene = document.createElement('div');
+    scene.className = 'scene';
+    scene.style.cssText = 'overflow-y:auto;padding:30px 20px';
+
+    const title = document.createElement('h2');
+    title.style.cssText = 'font-size:1.6em;color:#fff;margin-bottom:6px;text-align:center';
+    title.textContent = `🏅 成就（${unlocked}/${list.length}）`;
+    scene.appendChild(title);
+
+    const grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:560px;width:100%';
+    for (const a of list) {
+      const card = document.createElement('div');
+      card.style.cssText = `padding:12px;border-radius:12px;text-align:center;background:${a.unlocked ? 'rgba(254,211,48,.08)' : 'rgba(255,255,255,.04)'};border:1px solid ${a.unlocked ? 'rgba(254,211,48,.3)' : 'rgba(255,255,255,.06)'};opacity:${a.unlocked ? '1' : '0.6'}`;
+      card.innerHTML = `
+        <div style="font-size:1.6em;margin-bottom:4px">${a.unlocked ? '🏆' : '🔒'}</div>
+        <div style="font-weight:700;color:${a.unlocked ? '#fed330' : '#fff'};margin-bottom:4px">${a.name}</div>
+        <div style="font-size:.78em;color:rgba(255,255,255,.5);margin-bottom:4px">${a.description}</div>
+        <div style="font-size:.75em;color:rgba(255,255,255,.4)">🪙 ${a.rewardCoins}${a.unlocked ? ' · 已解锁' : ''}</div>
+      `;
+      grid.appendChild(card);
+    }
+    scene.appendChild(grid);
+
+    const backBtn = document.createElement('button');
+    backBtn.className = 'btn btn-secondary';
+    backBtn.style.cssText = 'margin-top:20px';
+    backBtn.textContent = '🏠 返回';
+    backBtn.addEventListener('click', () => {
+      AudioManager.playClickSound();
+      this.showMainMenu();
+    });
+    scene.appendChild(backBtn);
+
+    this.switchSceneRaw(scene, 'main-menu');
+  }
+
+  /** 显示道具背包 */
+  private showBag(): void {
+    const items = getBagItems();
+    const scene = document.createElement('div');
+    scene.className = 'scene';
+    scene.style.cssText = 'overflow-y:auto;padding:30px 20px;display:flex;flex-direction:column;align-items:center';
+
+    const title = document.createElement('h2');
+    title.style.cssText = 'font-size:1.6em;color:#fff;margin-bottom:16px;text-align:center';
+    title.textContent = '🎒 道具背包';
+    scene.appendChild(title);
+
+    if (items.length === 0) {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'padding:24px;border-radius:12px;background:rgba(255,255,255,.04);color:rgba(255,255,255,.4);text-align:center;font-size:.9em;line-height:1.8';
+      empty.innerHTML = '背包空空如也~<br>每日签到 / 首次通关关卡可获得回复药水';
+      scene.appendChild(empty);
+    } else {
+      const grid = document.createElement('div');
+      grid.style.cssText = 'display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:520px;width:100%';
+      for (const { item, count } of items) {
+        const card = document.createElement('div');
+        card.style.cssText = 'padding:14px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);text-align:center';
+        const emoji = item.type === 'fullRestore' ? '💊' : item.type === 'superPotion' ? '🧪' : '🥤';
+        card.innerHTML = `
+          <div style="font-size:2em;margin-bottom:4px">${emoji}</div>
+          <div style="font-weight:700;color:#fff;margin-bottom:4px">${item.name} ×${count}</div>
+          <div style="font-size:.78em;color:rgba(255,255,255,.5)">${item.description}</div>
+        `;
+        grid.appendChild(card);
+      }
+      scene.appendChild(grid);
+      const tip = document.createElement('div');
+      tip.style.cssText = 'margin-top:14px;font-size:.8em;color:rgba(255,255,255,.4);text-align:center';
+      tip.textContent = '💡 战斗中点击「🎒 道具」即可使用';
+      scene.appendChild(tip);
+    }
+
+    const backBtn = document.createElement('button');
+    backBtn.className = 'btn btn-secondary';
+    backBtn.style.cssText = 'margin-top:20px';
+    backBtn.textContent = '🏠 返回';
+    backBtn.addEventListener('click', () => {
+      AudioManager.playClickSound();
+      this.showMainMenu();
+    });
+    scene.appendChild(backBtn);
+
+    this.switchSceneRaw(scene, 'main-menu');
   }
 
   /** 切换场景（带动画）*/
