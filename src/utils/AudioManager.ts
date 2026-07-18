@@ -143,7 +143,6 @@ class AudioManagerClass {
 
   /** 本地轻音乐清单（CC BY 授权，作者署名见游戏内说明） */
   private static readonly BGM_TRACKS: Array<{ file: string; title: string; author: string }> = [
-    { file: 'music/bathed-in-the-light.mp3', title: 'Bathed in the Light', author: 'Kevin MacLeod' },
     { file: 'music/Carefree.mp3', title: 'Carefree', author: 'Kevin MacLeod' },
   ];
 

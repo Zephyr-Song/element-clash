@@ -3,7 +3,7 @@
  */
 
 import { AudioManager } from '../utils/AudioManager';
-import { loadSave, hasCheckedInToday, getCheckInInfo } from '../utils/Storage';
+import { loadSave, saveSave, hasCheckedInToday, getCheckInInfo } from '../utils/Storage';
 import { STAGES } from '../data/Stages';
 
 export class MainMenuScene {
@@ -68,6 +68,7 @@ export class MainMenuScene {
     this.el.appendChild(particles);
 
     this.el.innerHTML += `
+      <button class="btn-bgm-toggle ${AudioManager.bgmEnabled ? '' : 'off'}" id="btn-bgm" title="背景音乐开关">${AudioManager.bgmEnabled ? '🎵' : '🔇'}</button>
       <h1 class="main-title">⚔️ 元素对决 ⚔️</h1>
       <p class="main-subtitle">Element Clash — 属性克制回合制卡牌对战</p>
       <div class="main-buttons">
@@ -128,6 +129,17 @@ export class MainMenuScene {
     this.el.querySelector('#btn-bag')!.addEventListener('click', () => {
       AudioManager.playClickSound();
       this.onOpenBag();
+    });
+
+    // 主界面音乐开关
+    const bgmBtn = this.el.querySelector('#btn-bgm') as HTMLButtonElement;
+    bgmBtn.addEventListener('click', () => {
+      const newVal = !AudioManager.bgmEnabled;
+      AudioManager.setBgmEnabled(newVal);
+      const cs = loadSave();
+      saveSave({ ...cs, bgmEnabled: newVal });
+      bgmBtn.textContent = newVal ? '🎵' : '🔇';
+      bgmBtn.classList.toggle('off', !newVal);
     });
   }
 

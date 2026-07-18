@@ -45,6 +45,14 @@ body{
 
 /* ==================== MAIN MENU ==================== */
 .main-menu{text-align:center;position:relative;z-index:1}
+.btn-bgm-toggle{
+  position:absolute;top:14px;right:14px;width:46px;height:46px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35);color:#fff;
+  font-size:1.3em;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:transform .15s ease,background .2s ease,border-color .2s ease;z-index:5;
+}
+.btn-bgm-toggle:hover{transform:scale(1.08);background:rgba(0,0,0,.5)}
+.btn-bgm-toggle.off{border-color:rgba(255,255,255,.12);opacity:.6}
 .main-title{
   font-size:3em;font-weight:900;letter-spacing:4px;margin-bottom:8px;
   background:linear-gradient(135deg,#f1c40f,#e84545,#667eea,#26de81);
