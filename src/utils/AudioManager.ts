@@ -132,6 +132,109 @@ class AudioManagerClass {
       osc.start(t); osc.stop(t + 0.6);
     } catch { /* ignore */ }
   }
+
+  // ===== 背景音乐 (BGM) =====
+  // 用 Web Audio 实时合成一段轻快的 chiptune 循环，无需外部音频文件。
+  private _bgmEnabled: boolean = true;
+  private _bgmVolume: number = 0.4;
+  private bgmTimer: number | null = null;
+  private bgmMelodyIdx: number = 0;
+  private bgmBassIdx: number = 0;
+  private bgmMelodyNextTime: number = 0;
+  private bgmBassNextTime: number = 0;
+
+  /** 八分音符时值（秒） */
+  private static readonly STEP: number = 0.26;
+  /** 调度提前量 */
+  private static readonly LOOKAHEAD: number = 0.2;
+
+  // 主旋律：C大调，和弦进行 C - G - Am - F，每音符为一个八分音符(dur=1)
+  private static readonly BGM_MELODY: Array<{ midi: number; dur: number }> = [
+    { midi: 72, dur: 1 }, { midi: 76, dur: 1 }, { midi: 79, dur: 1 }, { midi: 84, dur: 1 },
+    { midi: 79, dur: 1 }, { midi: 83, dur: 1 }, { midi: 86, dur: 1 }, { midi: 83, dur: 1 },
+    { midi: 69, dur: 1 }, { midi: 72, dur: 1 }, { midi: 76, dur: 1 }, { midi: 81, dur: 1 },
+    { midi: 77, dur: 1 }, { midi: 81, dur: 1 }, { midi: 84, dur: 1 }, { midi: 81, dur: 1 },
+    { midi: 72, dur: 1 }, { midi: 76, dur: 1 }, { midi: 79, dur: 1 }, { midi: 84, dur: 1 },
+    { midi: 79, dur: 1 }, { midi: 83, dur: 1 }, { midi: 86, dur: 1 }, { midi: 83, dur: 1 },
+    { midi: 69, dur: 1 }, { midi: 72, dur: 1 }, { midi: 76, dur: 1 }, { midi: 81, dur: 1 },
+    { midi: 77, dur: 1 }, { midi: 81, dur: 1 }, { midi: 84, dur: 1 }, { midi: 81, dur: 1 },
+  ];
+
+  // 低音：每 4 个八分音符换一个根音(dur=4)，与主旋律循环等长(16秒)
+  private static readonly BGM_BASS: Array<{ midi: number; dur: number }> = [
+    { midi: 48, dur: 4 }, { midi: 43, dur: 4 }, { midi: 45, dur: 4 }, { midi: 41, dur: 4 },
+    { midi: 48, dur: 4 }, { midi: 43, dur: 4 }, { midi: 45, dur: 4 }, { midi: 41, dur: 4 },
+  ];
+
+  get bgmEnabled(): boolean { return this._bgmEnabled; }
+  get bgmVolume(): number { return this._bgmVolume; }
+
+  setBgmEnabled(val: boolean): void {
+    this._bgmEnabled = val;
+    if (val) { this.startBgm(); }
+    else { this.stopBgm(); }
+  }
+
+  setBgmVolume(v: number): void {
+    this._bgmVolume = Math.max(0, Math.min(1, v));
+  }
+
+  startBgm(): void {
+    if (!this._bgmEnabled) return;
+    if (this.bgmTimer !== null) return;
+    try {
+      const ctx = this.getContext();
+      this.bgmMelodyNextTime = ctx.currentTime + 0.1;
+      this.bgmBassNextTime = ctx.currentTime + 0.1;
+      this.bgmTimer = window.setInterval(() => this.scheduleBgm(), 25);
+    } catch { /* ignore */ }
+  }
+
+  stopBgm(): void {
+    if (this.bgmTimer !== null) {
+      clearInterval(this.bgmTimer);
+      this.bgmTimer = null;
+    }
+  }
+
+  private scheduleBgm(): void {
+    let ctx: AudioContext;
+    try { ctx = this.getContext(); } catch { return; }
+    // 主旋律轨道
+    while (this.bgmMelodyNextTime < ctx.currentTime + AudioManagerClass.LOOKAHEAD) {
+      const note = AudioManagerClass.BGM_MELODY[this.bgmMelodyIdx % AudioManagerClass.BGM_MELODY.length];
+      this.scheduleBgmNote(note, this.bgmMelodyNextTime, 'square', this._bgmVolume * 0.5);
+      this.bgmMelodyNextTime += note.dur * AudioManagerClass.STEP;
+      this.bgmMelodyIdx++;
+    }
+    // 低音轨道
+    while (this.bgmBassNextTime < ctx.currentTime + AudioManagerClass.LOOKAHEAD) {
+      const note = AudioManagerClass.BGM_BASS[this.bgmBassIdx % AudioManagerClass.BGM_BASS.length];
+      this.scheduleBgmNote(note, this.bgmBassNextTime, 'triangle', this._bgmVolume * 0.7);
+      this.bgmBassNextTime += note.dur * AudioManagerClass.STEP;
+      this.bgmBassIdx++;
+    }
+  }
+
+  private scheduleBgmNote(note: { midi: number; dur: number }, time: number, type: OscillatorType, vol: number): void {
+    if (note.midi <= 0) return; // 休止符
+    try {
+      const ctx = this.getContext();
+      const freq = 440 * Math.pow(2, (note.midi - 69) / 12);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, time);
+      const dur = note.dur * AudioManagerClass.STEP * 0.92;
+      gain.gain.setValueAtTime(0.0001, time);
+      gain.gain.linearRampToValueAtTime(Math.max(0.0002, vol), time + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(time);
+      osc.stop(time + dur + 0.03);
+    } catch { /* ignore */ }
+  }
 }
 
 export const AudioManager = new AudioManagerClass();

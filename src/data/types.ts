@@ -329,6 +329,8 @@ export interface SaveData {
   losses: number;
   completedStages: number[];
   soundEnabled: boolean;
+  bgmEnabled: boolean;
+  bgmVolume: number;
   coins: number;
   lastCheckIn: string;   // ISO日期字符串
   checkInStreak: number;  // 连续签到天数

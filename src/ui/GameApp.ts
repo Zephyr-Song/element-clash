@@ -34,6 +34,12 @@ export class GameApp {
   start(): void {
     const save = loadSave();
     AudioManager.setEnabled(save.soundEnabled);
+    AudioManager.setBgmVolume(save.bgmVolume);
+    AudioManager.setBgmEnabled(save.bgmEnabled);
+    // 浏览器自动播放策略：音频需用户手势后才能发声，首次交互时启动 BGM
+    this.container.addEventListener('pointerdown', () => {
+      AudioManager.startBgm();
+    }, { once: true });
     this.showMainMenu();
   }
 
@@ -569,6 +575,16 @@ export class GameApp {
         </div>
       </div>
       <div class="settings-item">
+        <label>🎵 背景音乐</label>
+        <div class="toggle ${save.bgmEnabled ? 'on' : ''}" id="toggle-bgm">
+          <div class="knob"></div>
+        </div>
+      </div>
+      <div class="settings-item">
+        <label>🔊 音乐音量</label>
+        <input type="range" id="range-bgm-vol" min="0" max="100" value="${Math.round(save.bgmVolume * 100)}" style="width:130px;accent-color:#ffd24a" />
+      </div>
+      <div class="settings-item">
         <label>🪙 金币</label>
         <span style="color:#fed330;font-size:.9em">${save.coins}</span>
       </div>
@@ -598,6 +614,23 @@ export class GameApp {
       AudioManager.setEnabled(newVal);
       saveSave({ ...currentSave, soundEnabled: newVal });
       toggle.classList.toggle('on', newVal);
+    });
+
+    scene.querySelector('#toggle-bgm')!.addEventListener('click', () => {
+      const toggle = scene.querySelector('#toggle-bgm') as HTMLElement;
+      const currentSave = loadSave();
+      const newVal = !currentSave.bgmEnabled;
+      AudioManager.setBgmEnabled(newVal);
+      saveSave({ ...currentSave, bgmEnabled: newVal });
+      toggle.classList.toggle('on', newVal);
+    });
+
+    const volRange = scene.querySelector('#range-bgm-vol') as HTMLInputElement;
+    volRange.addEventListener('input', () => {
+      const v = Number(volRange.value) / 100;
+      AudioManager.setBgmVolume(v);
+      const cs = loadSave();
+      saveSave({ ...cs, bgmVolume: v });
     });
 
     scene.querySelector('#btn-back')!.addEventListener('click', () => {
