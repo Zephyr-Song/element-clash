@@ -35,6 +35,7 @@ export class GameApp {
     const save = loadSave();
     AudioManager.setEnabled(save.soundEnabled);
     AudioManager.setBgmVolume(save.bgmVolume);
+    AudioManager.setBgmTrack(save.bgmTrack);
     AudioManager.setBgmEnabled(save.bgmEnabled);
     // 旧版默认音量偏大，统一调小（仅当玩家尚未手动调整过音量时）
     if (save.bgmVolume === 0.4) {
@@ -589,6 +590,13 @@ export class GameApp {
         <label>🔊 音乐音量</label>
         <input type="range" id="range-bgm-vol" min="0" max="100" value="${Math.round(save.bgmVolume * 100)}" style="width:130px;accent-color:#ffd24a" />
       </div>
+      <div class="settings-item" style="flex-direction:column;align-items:flex-start;gap:10px">
+        <label>🎶 选择曲目</label>
+        <div id="bgm-track-list" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+      </div>
+      <div class="settings-item" style="border:none;padding:0">
+        <span style="color:#9aa6b2;font-size:.72em;line-height:1.5">🎵 背景音乐来自 Kevin MacLeod（incompetech.com），采用 Creative Commons BY 授权，可免费使用并署名。</span>
+      </div>
       <div class="settings-item">
         <label>🪙 金币</label>
         <span style="color:#fed330;font-size:.9em">${save.coins}</span>
@@ -636,6 +644,24 @@ export class GameApp {
       AudioManager.setBgmVolume(v);
       const cs = loadSave();
       saveSave({ ...cs, bgmVolume: v });
+    });
+
+    const trackList = scene.querySelector('#bgm-track-list') as HTMLElement;
+    AudioManager.bgmTracks.forEach((t, i) => {
+      const b = document.createElement('button');
+      b.className = 'btn btn-sm ' + (i === save.bgmTrack ? 'btn-primary' : 'btn-secondary');
+      b.textContent = t.title;
+      b.style.margin = '0';
+      b.addEventListener('click', () => {
+        AudioManager.playClickSound();
+        AudioManager.setBgmTrack(i);
+        const cs = loadSave();
+        saveSave({ ...cs, bgmTrack: i });
+        trackList.querySelectorAll('button').forEach((bb, j) => {
+          bb.className = 'btn btn-sm ' + (j === i ? 'btn-primary' : 'btn-secondary');
+        });
+      });
+      trackList.appendChild(b);
     });
 
     scene.querySelector('#btn-back')!.addEventListener('click', () => {

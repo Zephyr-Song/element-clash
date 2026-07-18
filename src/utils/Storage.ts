@@ -42,6 +42,7 @@ const DEFAULT_SAVE: SaveData = {
   soundEnabled: true,
   bgmEnabled: true,
   bgmVolume: 0.22,
+  bgmTrack: 0,
   coins: NEW_PLAYER_BONUS,
   lastCheckIn: '',
   checkInStreak: 0,

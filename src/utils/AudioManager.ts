@@ -134,107 +134,74 @@ class AudioManagerClass {
   }
 
   // ===== 背景音乐 (BGM) =====
-  // 用 Web Audio 实时合成一段轻快的 chiptune 循环，无需外部音频文件。
+  // 播放本地打包的轻音乐 mp3（public/music/ 下），可循环、可切换曲目、独立开关与音量。
   private _bgmEnabled: boolean = true;
-  private _bgmVolume: number = 0.4;
-  private bgmTimer: number | null = null;
-  private bgmMelodyIdx: number = 0;
-  private bgmBassIdx: number = 0;
-  private bgmMelodyNextTime: number = 0;
-  private bgmBassNextTime: number = 0;
+  private _bgmVolume: number = 0.22;
+  private _bgmTrackIndex: number = 0;
+  private bgmAudio: HTMLAudioElement | null = null;
+  private bgmGestureArmed: boolean = false;
 
-  /** 八分音符时值（秒），越大越舒缓 */
-  private static readonly STEP: number = 0.42;
-  /** 调度提前量 */
-  private static readonly LOOKAHEAD: number = 0.2;
-
-  // 主旋律：C大调轻音乐，和弦进行 C - G - Am - F，低八度更柔和，每和弦末尾留白(休止符 midi:0)
-  private static readonly BGM_MELODY: Array<{ midi: number; dur: number }> = [
-    { midi: 72, dur: 1 }, { midi: 76, dur: 1 }, { midi: 79, dur: 1 }, { midi: 0, dur: 1 },
-    { midi: 71, dur: 1 }, { midi: 74, dur: 1 }, { midi: 79, dur: 1 }, { midi: 0, dur: 1 },
-    { midi: 69, dur: 1 }, { midi: 72, dur: 1 }, { midi: 76, dur: 1 }, { midi: 0, dur: 1 },
-    { midi: 65, dur: 1 }, { midi: 69, dur: 1 }, { midi: 72, dur: 1 }, { midi: 0, dur: 1 },
-    { midi: 72, dur: 1 }, { midi: 76, dur: 1 }, { midi: 79, dur: 1 }, { midi: 0, dur: 1 },
-    { midi: 71, dur: 1 }, { midi: 74, dur: 1 }, { midi: 79, dur: 1 }, { midi: 0, dur: 1 },
-    { midi: 69, dur: 1 }, { midi: 72, dur: 1 }, { midi: 76, dur: 1 }, { midi: 0, dur: 1 },
-    { midi: 65, dur: 1 }, { midi: 69, dur: 1 }, { midi: 72, dur: 1 }, { midi: 0, dur: 1 },
-  ];
-
-  // 低音：每 4 个八分音符换一个根音(dur=4)，与主旋律循环等长(16秒)
-  private static readonly BGM_BASS: Array<{ midi: number; dur: number }> = [
-    { midi: 48, dur: 4 }, { midi: 43, dur: 4 }, { midi: 45, dur: 4 }, { midi: 41, dur: 4 },
-    { midi: 48, dur: 4 }, { midi: 43, dur: 4 }, { midi: 45, dur: 4 }, { midi: 41, dur: 4 },
+  /** 本地轻音乐清单（CC BY 授权，作者署名见游戏内说明） */
+  private static readonly BGM_TRACKS: Array<{ file: string; title: string; author: string }> = [
+    { file: 'music/bathed-in-the-light.mp3', title: 'Bathed in the Light', author: 'Kevin MacLeod' },
+    { file: 'music/Carefree.mp3', title: 'Carefree', author: 'Kevin MacLeod' },
   ];
 
   get bgmEnabled(): boolean { return this._bgmEnabled; }
   get bgmVolume(): number { return this._bgmVolume; }
+  get bgmTrackIndex(): number { return this._bgmTrackIndex; }
+  get bgmTracks(): Array<{ file: string; title: string; author: string }> { return AudioManagerClass.BGM_TRACKS; }
 
   setBgmEnabled(val: boolean): void {
     this._bgmEnabled = val;
-    if (val) { this.startBgm(); }
+    if (val) { this.startBgm(); this.armBgmGesture(); }
     else { this.stopBgm(); }
   }
 
   setBgmVolume(v: number): void {
     this._bgmVolume = Math.max(0, Math.min(1, v));
+    if (this.bgmAudio) this.bgmAudio.volume = this._bgmVolume;
+  }
+
+  setBgmTrack(index: number): void {
+    this._bgmTrackIndex = Math.max(0, Math.min(AudioManagerClass.BGM_TRACKS.length - 1, index));
+    if (this._bgmEnabled) this.startBgm();
   }
 
   startBgm(): void {
     if (!this._bgmEnabled) return;
-    if (this.bgmTimer !== null) return;
     try {
-      const ctx = this.getContext();
-      this.bgmMelodyNextTime = ctx.currentTime + 0.1;
-      this.bgmBassNextTime = ctx.currentTime + 0.1;
-      this.bgmTimer = window.setInterval(() => this.scheduleBgm(), 25);
+      const track = AudioManagerClass.BGM_TRACKS[this._bgmTrackIndex % AudioManagerClass.BGM_TRACKS.length];
+      const base = (import.meta.env.BASE_URL || '/');
+      if (!this.bgmAudio) {
+        this.bgmAudio = new Audio();
+        this.bgmAudio.loop = true;
+        this.bgmAudio.preload = 'auto';
+      }
+      this.bgmAudio.src = base + track.file;
+      this.bgmAudio.volume = this._bgmVolume;
+      const pr = this.bgmAudio.play();
+      if (pr && typeof pr.catch === 'function') {
+        pr.catch(() => { /* 浏览器自动播放限制：等待用户手势后由 armBgmGesture 启动 */ });
+      }
     } catch { /* ignore */ }
   }
 
   stopBgm(): void {
-    if (this.bgmTimer !== null) {
-      clearInterval(this.bgmTimer);
-      this.bgmTimer = null;
-    }
+    if (this.bgmAudio) this.bgmAudio.pause();
   }
 
-  private scheduleBgm(): void {
-    let ctx: AudioContext;
-    try { ctx = this.getContext(); } catch { return; }
-    // 主旋律轨道（柔和正弦波 + 较长延音）
-    while (this.bgmMelodyNextTime < ctx.currentTime + AudioManagerClass.LOOKAHEAD) {
-      const note = AudioManagerClass.BGM_MELODY[this.bgmMelodyIdx % AudioManagerClass.BGM_MELODY.length];
-      this.scheduleBgmNote(note, this.bgmMelodyNextTime, 'sine', this._bgmVolume * 0.45, 1.8);
-      this.bgmMelodyNextTime += note.dur * AudioManagerClass.STEP;
-      this.bgmMelodyIdx++;
-    }
-    // 低音轨道（柔和正弦波）
-    while (this.bgmBassNextTime < ctx.currentTime + AudioManagerClass.LOOKAHEAD) {
-      const note = AudioManagerClass.BGM_BASS[this.bgmBassIdx % AudioManagerClass.BGM_BASS.length];
-      this.scheduleBgmNote(note, this.bgmBassNextTime, 'sine', this._bgmVolume * 0.4, 1.0);
-      this.bgmBassNextTime += note.dur * AudioManagerClass.STEP;
-      this.bgmBassIdx++;
-    }
-  }
-
-  private scheduleBgmNote(note: { midi: number; dur: number }, time: number, type: OscillatorType, vol: number, releaseMul: number = 1): void {
-    if (note.midi <= 0) return; // 休止符
-    try {
-      const ctx = this.getContext();
-      const freq = 440 * Math.pow(2, (note.midi - 69) / 12);
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, time);
-      const dur = note.dur * AudioManagerClass.STEP;
-      const release = dur * releaseMul;
-      gain.gain.setValueAtTime(0.0001, time);
-      gain.gain.linearRampToValueAtTime(Math.max(0.0002, vol), time + 0.04); // 柔和起音，避免咔哒声
-      gain.gain.exponentialRampToValueAtTime(0.0001, time + release); // 缓慢衰减，余韵绵长
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(time);
-      osc.stop(time + release + 0.05);
-    } catch { /* ignore */ }
+  /** 浏览器禁止无手势播放音频：注册一次性手势监听器，首次点击/按键时启动 BGM */
+  private armBgmGesture(): void {
+    if (this.bgmGestureArmed) return;
+    this.bgmGestureArmed = true;
+    const handler = () => {
+      if (this._bgmEnabled && this.bgmAudio && this.bgmAudio.paused) {
+        this.startBgm();
+      }
+    };
+    document.addEventListener('pointerdown', handler);
+    document.addEventListener('keydown', handler);
   }
 }
 
