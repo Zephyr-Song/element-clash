@@ -51,7 +51,7 @@ export class MainMenuScene {
     const save = loadSave();
     const checkInInfo = getCheckInInfo();
 
-    // 粒子背景
+    // 粒子背景（固定全屏，作为底层）
     const particles = document.createElement('div');
     particles.className = 'particles';
     for (let i = 0; i < 30; i++) {
@@ -68,34 +68,76 @@ export class MainMenuScene {
       `;
       particles.appendChild(p);
     }
-    this.el.appendChild(particles);
 
-    this.el.innerHTML += `
+    this.el.innerHTML = `
       <button class="btn-bgm-toggle ${AudioManager.bgmEnabled ? '' : 'off'}" id="btn-bgm" title="背景音乐开关">${AudioManager.bgmEnabled ? '🎵' : '🔇'}</button>
       <button class="btn-newbie ${canClaimNewbiePack() ? '' : 'claimed'}" id="btn-newbie">🎁 新手礼包</button>
-      <h1 class="main-title">⚔️ 元素对决 ⚔️</h1>
-      <p class="main-subtitle">Element Clash — 属性克制回合制卡牌对战</p>
-      <div class="main-buttons">
-        <button class="btn btn-primary" id="btn-start">🗺️ 关卡冒险</button>
-        <button class="btn btn-primary" id="btn-gacha" style="background:linear-gradient(135deg,#a55eea,#6c5ce7)">🎰 精灵召唤</button>
-        <button class="btn btn-secondary" id="btn-checkin" style="position:relative">
-          📅 每日签到
-          ${checkInInfo.canCheckIn ? '<span style="position:absolute;top:-4px;right:-4px;width:10px;height:10px;border-radius:50%;background:#e84545;animation:pulse 1s infinite"></span>' : ''}
-        </button>
-        <button class="btn btn-secondary" id="btn-guide">📖 玩法介绍</button>
-        <button class="btn btn-secondary" id="btn-pokedex">📕 宠物图鉴</button>
-        <button class="btn btn-secondary" id="btn-settings">⚙️ 游戏设置</button>
-        <button class="btn btn-secondary" id="btn-tasks">📋 每日任务</button>
-        <button class="btn btn-secondary" id="btn-achievements">🏅 成就</button>
-        <button class="btn btn-secondary" id="btn-bag">🎒 背包</button>
-      </div>
-      <div class="main-info">
-        <span>🗺️ 关卡: ${save.completedStages.length}/${STAGES.length}</span>
-        <span>🪙 ${save.coins}</span>
-        <span>🏆 ${save.wins}胜 ${save.losses}负</span>
-        <span>🔊 ${save.soundEnabled ? '开' : '关'}</span>
+
+      <div class="menu-shell">
+        <div class="menu-topbar">
+          <div class="stat-chip"><span class="chip-ic">🗺️</span><span class="chip-txt">关卡 ${save.completedStages.length}/${STAGES.length}</span></div>
+          <div class="stat-chip"><span class="chip-ic">🪙</span><span class="chip-txt">${save.coins}</span></div>
+          <div class="stat-chip"><span class="chip-ic">🏆</span><span class="chip-txt">${save.wins}胜 ${save.losses}负</span></div>
+          <div class="stat-chip"><span class="chip-ic">🔊</span><span class="chip-txt">${save.soundEnabled ? '开' : '关'}</span></div>
+        </div>
+
+        <header class="menu-hero">
+          <h1 class="main-title">⚔️ 元素对决 ⚔️</h1>
+          <p class="main-subtitle">Element Clash · 属性克制回合制卡牌对战</p>
+        </header>
+
+        <div class="menu-section-label">核心玩法</div>
+        <div class="menu-grid menu-grid-core">
+          <button class="menu-card card-primary" id="btn-start">
+            <span class="mc-icon">🗺️</span>
+            <span class="mc-body"><span class="mc-title">关卡冒险</span><span class="mc-desc">挑战 ${STAGES.length} 关 · 收服元素精灵</span></span>
+            <span class="mc-arrow">›</span>
+          </button>
+          <button class="menu-card card-gacha" id="btn-gacha">
+            <span class="mc-icon">🎰</span>
+            <span class="mc-body"><span class="mc-title">精灵召唤</span><span class="mc-desc">抽取稀有伙伴 · 强化阵容</span></span>
+            <span class="mc-arrow">›</span>
+          </button>
+        </div>
+
+        <div class="menu-section-label">日常 & 收藏</div>
+        <div class="menu-grid menu-grid-sub">
+          <button class="menu-card" id="btn-checkin">
+            <span class="mc-icon">📅</span>
+            <span class="mc-body"><span class="mc-title">每日签到</span><span class="mc-desc">领金币与药水</span></span>
+            ${checkInInfo.canCheckIn ? '<span class="dot"></span>' : ''}
+          </button>
+          <button class="menu-card" id="btn-tasks">
+            <span class="mc-icon">📋</span>
+            <span class="mc-body"><span class="mc-title">每日任务</span><span class="mc-desc">完成任务得奖励</span></span>
+          </button>
+          <button class="menu-card" id="btn-achievements">
+            <span class="mc-icon">🏅</span>
+            <span class="mc-body"><span class="mc-title">成就</span><span class="mc-desc">解锁收藏荣誉</span></span>
+          </button>
+          <button class="menu-card" id="btn-bag">
+            <span class="mc-icon">🎒</span>
+            <span class="mc-body"><span class="mc-title">背包</span><span class="mc-desc">药水与道具</span></span>
+          </button>
+          <button class="menu-card" id="btn-pokedex">
+            <span class="mc-icon">📕</span>
+            <span class="mc-body"><span class="mc-title">宠物图鉴</span><span class="mc-desc">查看全部精灵</span></span>
+          </button>
+          <button class="menu-card" id="btn-guide">
+            <span class="mc-icon">📖</span>
+            <span class="mc-body"><span class="mc-title">玩法介绍</span><span class="mc-desc">属性克制说明</span></span>
+          </button>
+          <button class="menu-card" id="btn-settings">
+            <span class="mc-icon">⚙️</span>
+            <span class="mc-body"><span class="mc-title">游戏设置</span><span class="mc-desc">音效 · 音量</span></span>
+          </button>
+        </div>
+
+        <footer class="menu-footer">⚔️ 元素对决 · 收集 · 养成 · 对战</footer>
       </div>
     `;
+
+    this.el.appendChild(particles); // 粒子作为底层背景
 
     // 事件绑定
     this.el.querySelector('#btn-start')!.addEventListener('click', () => {
@@ -156,14 +198,27 @@ export class MainMenuScene {
 
   refresh(): void {
     const save = loadSave();
-    const info = this.el.querySelector('.main-info');
-    if (info) {
-      info.innerHTML = `
-        <span>🗺️ 关卡: ${save.completedStages.length}/${STAGES.length}</span>
-        <span>🪙 ${save.coins}</span>
-        <span>🏆 ${save.wins}胜 ${save.losses}负</span>
-        <span>🔊 ${save.soundEnabled ? '开' : '关'}</span>
+    const topbar = this.el.querySelector('.menu-topbar');
+    if (topbar) {
+      topbar.innerHTML = `
+        <div class="stat-chip"><span class="chip-ic">🗺️</span><span class="chip-txt">关卡 ${save.completedStages.length}/${STAGES.length}</span></div>
+        <div class="stat-chip"><span class="chip-ic">🪙</span><span class="chip-txt">${save.coins}</span></div>
+        <div class="stat-chip"><span class="chip-ic">🏆</span><span class="chip-txt">${save.wins}胜 ${save.losses}负</span></div>
+        <div class="stat-chip"><span class="chip-ic">🔊</span><span class="chip-txt">${save.soundEnabled ? '开' : '关'}</span></div>
       `;
+    }
+    // 签到红点刷新
+    const card = this.el.querySelector('#btn-checkin');
+    if (card) {
+      const ci = getCheckInInfo();
+      const has = card.querySelector('.dot');
+      if (ci.canCheckIn && !has) {
+        const d = document.createElement('span');
+        d.className = 'dot';
+        card.appendChild(d);
+      } else if (!ci.canCheckIn && has) {
+        has.remove();
+      }
     }
   }
 }
