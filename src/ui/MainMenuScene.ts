@@ -103,15 +103,6 @@ export class MainMenuScene {
           </button>
         </div>
 
-        <div class="menu-section-label">培养</div>
-        <div class="menu-grid menu-grid-core">
-          <button class="menu-card card-train" id="btn-training">
-            <span class="mc-icon">📊</span>
-            <span class="mc-body"><span class="mc-title">宠物属性</span><span class="mc-desc">查看属性与技能</span></span>
-            <span class="mc-arrow">›</span>
-          </button>
-        </div>
-
         <div class="menu-section-label">日常 & 收藏</div>
         <div class="menu-grid menu-grid-sub">
           <button class="menu-card" id="btn-checkin">
@@ -130,6 +121,10 @@ export class MainMenuScene {
           <button class="menu-card" id="btn-bag">
             <span class="mc-icon">🎒</span>
             <span class="mc-body"><span class="mc-title">背包</span><span class="mc-desc">药水与道具</span></span>
+          </button>
+          <button class="menu-card" id="btn-training">
+            <span class="mc-icon">📊</span>
+            <span class="mc-body"><span class="mc-title">宠物属性</span><span class="mc-desc">属性与技能</span></span>
           </button>
           <button class="menu-card" id="btn-pokedex">
             <span class="mc-icon">📕</span>

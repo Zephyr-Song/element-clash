@@ -135,10 +135,12 @@ export class PetInfoScene {
       { key: '速度', val: stat(pet.baseSpe), cap: 320 },
     ];
     const statsHtml = attrs.map(a => `
-      <div class="pd-stat">
-        <span class="pd-stat-key">${a.key}</span>
-        <div class="pd-stat-bar"><div class="pd-stat-fill" style="width:${Math.min(100, Math.floor(a.val / a.cap * 100))}%;background:${color}"></div></div>
-        <span class="pd-stat-val">${a.val}</span>
+      <div class="pd-stat" style="--c:${color}">
+        <div class="pd-stat-top">
+          <span class="pd-stat-key">${a.key}</span>
+          <span class="pd-stat-val">${a.val}</span>
+        </div>
+        <div class="pd-stat-bar"><div class="pd-stat-fill" style="width:${Math.min(100, Math.floor(a.val / a.cap * 100))}%"></div></div>
       </div>`).join('');
 
     const skillsHtml = pet.skills.map(id => {
