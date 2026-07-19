@@ -4,8 +4,10 @@
 
 import type { Pet, BattleState, SceneType, Difficulty } from '../data/types';
 import { PETS } from '../data/Pets';
+import { getItemById } from '../data/Items';
+import { renderPotionIcon } from '../utils/PotionIcon';
 import { STAGES, getEnemyPets, getUnlockedPetIds, STARTER_PET_IDS } from '../data/Stages';
-import { loadSave, saveSave, updateRecord, isStageCompleted, completeStage, checkIn, getCheckInInfo, GACHA_PET_IDS, canClaimCheckInReward, claimCheckInReward, CHECKIN_REWARD_PET_ID, CHECKIN_REWARD_STREAK, canClaimCheckInReward7, claimCheckInReward7, CHECKIN_REWARD_PET_ID_7, CHECKIN_REWARD_STREAK_7, getTaskStatuses, claimTask, getAchievementStatuses, getBagItems, consumeItem, addItem, type TaskStatus, type AchievementStatus } from '../utils/Storage';
+import { loadSave, saveSave, updateRecord, isStageCompleted, completeStage, checkIn, getCheckInInfo, GACHA_PET_IDS, canClaimCheckInReward, claimCheckInReward, CHECKIN_REWARD_PET_ID, CHECKIN_REWARD_STREAK, canClaimCheckInReward7, claimCheckInReward7, CHECKIN_REWARD_PET_ID_7, CHECKIN_REWARD_STREAK_7, getTaskStatuses, claimTask, getAchievementStatuses, getBagItems, consumeItem, addItem, canClaimNewbiePack, claimNewbiePack, NEWBIE_PACK, type TaskStatus, type AchievementStatus } from '../utils/Storage';
 import { AudioManager } from '../utils/AudioManager';
 import { ELEMENT_NAMES, ELEMENT_COLORS, ELEMENT_EMOJIS } from '../data/types';
 import { getEffectiveness } from '../data/Elements';
@@ -61,6 +63,7 @@ export class GameApp {
       () => this.showTasks(),
       () => this.showAchievements(),
       () => this.showBag(),
+      () => this.showNewbiePack(),
     ), 'main-menu');
   }
 
@@ -245,7 +248,7 @@ export class GameApp {
     if (isWin) {
       const firstClear = !isCompleted;
       completeStage(stageId);
-      if (firstClear) addItem(1, 1); // 首次通关赠送1个回复药水
+      if (firstClear) addItem(1, 1); // 首次通关赠送1个小药水
     }
 
     this.switchScene(scene, 'result');
@@ -725,9 +728,23 @@ export class GameApp {
 
     // 7天循环奖励提示
     const bonusInfo = document.createElement('div');
-    bonusInfo.style.cssText = 'font-size:.82em;color:rgba(165,94,234,.7);margin-bottom:20px;text-align:center';
+    bonusInfo.style.cssText = 'font-size:.82em;color:rgba(165,94,234,.7);margin-bottom:14px;text-align:center';
     bonusInfo.textContent = '🎁 每7天额外奖励500金币！';
     scene.appendChild(bonusInfo);
+
+    // 今日药水预览
+    const potionHtml = info.todayItems.map(({ itemId, count }) => {
+      const it = getItemById(itemId);
+      if (!it) return '';
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+        ${renderPotionIcon(it, 40)}
+        <span style="font-size:.7em;color:#fff">${it.name}×${count}</span>
+      </div>`;
+    }).join('');
+    const potionPreview = document.createElement('div');
+    potionPreview.style.cssText = 'display:flex;gap:14px;justify-content:center;align-items:flex-end;margin-bottom:16px';
+    potionPreview.innerHTML = potionHtml;
+    scene.appendChild(potionPreview);
 
     // 签到3天奖励精灵
     const reward3Pet = PETS.find(p => p.id === CHECKIN_REWARD_PET_ID);
@@ -760,7 +777,7 @@ export class GameApp {
       const checkInBtn = document.createElement('button');
       checkInBtn.className = 'btn btn-primary';
       checkInBtn.style.cssText = 'width:100%;max-width:300px;font-size:1.1em;margin-bottom:16px';
-      checkInBtn.innerHTML = `✅ 领取今日奖励（🪙 +${info.todayReward}）`;
+      checkInBtn.innerHTML = `✅ 领取今日奖励（🪙 +${info.todayReward} + 药水）`;
       checkInBtn.addEventListener('click', () => {
         AudioManager.playClickSound();
         const reward = checkIn();
@@ -785,7 +802,9 @@ export class GameApp {
       📋 签到规则：<br>
       · 每日基础奖励 100 金币<br>
       · 连续签到每天额外 +50×天数 金币<br>
-      · 每7天额外奖励 500 金币<br>
+      · 每日赠送 1 个🟢小药水<br>
+      · 第3天额外送 1 个🔵中药水<br>
+      · 每7天额外送 1 个🟡大药水 + 500 金币<br>
       · 断签后连续天数重置
     `;
     scene.appendChild(rules);
@@ -928,7 +947,7 @@ export class GameApp {
     if (items.length === 0) {
       const empty = document.createElement('div');
       empty.style.cssText = 'padding:24px;border-radius:12px;background:rgba(255,255,255,.04);color:rgba(255,255,255,.4);text-align:center;font-size:.9em;line-height:1.8';
-      empty.innerHTML = '背包空空如也~<br>每日签到 / 首次通关关卡可获得回复药水';
+      empty.innerHTML = '背包空空如也~<br>每日签到 / 首次通关关卡 / 新手礼包可获得药水';
       scene.appendChild(empty);
     } else {
       const grid = document.createElement('div');
@@ -936,9 +955,8 @@ export class GameApp {
       for (const { item, count } of items) {
         const card = document.createElement('div');
         card.style.cssText = 'padding:14px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);text-align:center';
-        const emoji = item.type === 'fullRestore' ? '💊' : item.type === 'superPotion' ? '🧪' : '🥤';
         card.innerHTML = `
-          <div style="font-size:2em;margin-bottom:4px">${emoji}</div>
+          <div style="margin-bottom:4px;display:flex;justify-content:center">${renderPotionIcon(item, 52)}</div>
           <div style="font-weight:700;color:#fff;margin-bottom:4px">${item.name} ×${count}</div>
           <div style="font-size:.78em;color:rgba(255,255,255,.5)">${item.description}</div>
         `;
@@ -955,6 +973,71 @@ export class GameApp {
     backBtn.className = 'btn btn-secondary';
     backBtn.style.cssText = 'margin-top:20px';
     backBtn.textContent = '🏠 返回';
+    backBtn.addEventListener('click', () => {
+      AudioManager.playClickSound();
+      this.showMainMenu();
+    });
+    scene.appendChild(backBtn);
+
+    this.switchSceneRaw(scene, 'main-menu');
+  }
+
+  /** 显示新手礼包领取界面 */
+  private showNewbiePack(): void {
+    const scene = document.createElement('div');
+    scene.className = 'scene';
+    scene.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;text-align:center';
+
+    const title = document.createElement('h2');
+    title.style.cssText = 'font-size:1.7em;color:#fff;margin-bottom:6px';
+    title.textContent = '🎁 新手礼包';
+    scene.appendChild(title);
+
+    const subtitle = document.createElement('div');
+    subtitle.style.cssText = 'font-size:.9em;color:rgba(255,255,255,.5);margin-bottom:22px';
+    subtitle.textContent = '欢迎来到元素对决！点击领取专属新手福利';
+    scene.appendChild(subtitle);
+
+    // 礼包内容
+    const packItemsHtml = NEWBIE_PACK.items.map(({ itemId, count }) => {
+      const it = getItemById(itemId);
+      if (!it) return '';
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        ${renderPotionIcon(it, 50)}
+        <span style="font-size:.72em;color:#fff">${it.name}×${count}</span>
+      </div>`;
+    }).join('');
+
+    const content = document.createElement('div');
+    content.style.cssText = `padding:22px 26px;border-radius:16px;background:linear-gradient(135deg,rgba(255,210,74,.12),rgba(255,159,67,.12));border:2px solid rgba(255,210,74,.4);margin-bottom:24px`;
+    content.innerHTML = `
+      <div style="font-size:1.5em;font-weight:800;color:#ffd24a;margin-bottom:14px">🪙 +${NEWBIE_PACK.coins} 金币</div>
+      <div style="display:flex;gap:18px;justify-content:center;align-items:flex-end">${packItemsHtml}</div>
+    `;
+    scene.appendChild(content);
+
+    if (canClaimNewbiePack()) {
+      const claimBtn = document.createElement('button');
+      claimBtn.className = 'btn btn-primary';
+      claimBtn.style.cssText = 'width:100%;max-width:300px;font-size:1.05em;background:linear-gradient(135deg,#ffd24a,#ff9f43);color:#3a2a00';
+      claimBtn.textContent = '🎉 一键领取';
+      claimBtn.addEventListener('click', () => {
+        AudioManager.playClickSound();
+        const result = claimNewbiePack();
+        if (result) this.showNewbiePack();
+      });
+      scene.appendChild(claimBtn);
+    } else {
+      const doneTag = document.createElement('div');
+      doneTag.style.cssText = 'padding:12px 24px;border-radius:10px;background:rgba(38,222,129,.1);color:#26de81;font-size:.95em';
+      doneTag.innerHTML = '✅ 礼包已领取，祝冒险愉快！';
+      scene.appendChild(doneTag);
+    }
+
+    const backBtn = document.createElement('button');
+    backBtn.className = 'btn btn-secondary';
+    backBtn.style.cssText = 'margin-top:20px';
+    backBtn.textContent = '🏠 返回主菜单';
     backBtn.addEventListener('click', () => {
       AudioManager.playClickSound();
       this.showMainMenu();

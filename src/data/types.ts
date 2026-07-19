@@ -172,6 +172,8 @@ export interface Item {
   type: ItemType;
   healAmount: number;
   description: string;
+  /** 药水液体颜色，用于可视化图案（SVG 瓶子） */
+  color: string;
 }
 
 /** 玩家行动类型 */
@@ -344,4 +346,5 @@ export interface SaveData {
   bag: Record<number, number>;      // 道具背包(itemId -> 数量)
   tasks: TaskProgress;              // 每日/周常任务进度
   achievements: Record<number, boolean>; // 成就解锁状态(achId -> 是否解锁)
+  newbiePackClaimed: boolean;       // 新手礼包是否已领取
 }

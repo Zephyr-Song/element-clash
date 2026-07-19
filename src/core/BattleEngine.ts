@@ -611,7 +611,7 @@ export class BattleEngine {
       type: 'item_use',
       side: 'player',
       petName: target.pet.name,
-      itemName: item ? item.name : '回复药水',
+      itemName: item ? item.name : '小药水',
       healAmount,
     });
     events.push({

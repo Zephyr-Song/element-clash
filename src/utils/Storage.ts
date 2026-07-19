@@ -55,6 +55,7 @@ const DEFAULT_SAVE: SaveData = {
   bag: {},
   tasks: { dailyDate: '', weeklyDate: '', progress: {}, claimed: [] },
   achievements: {},
+  newbiePackClaimed: false,
 };
 
 export function loadSave(): SaveData {
@@ -141,13 +142,16 @@ export function checkIn(): number {
   refreshTasks(save);
   incrementTaskMetric(save, 'checkin');
   checkAchievements(save);
-  addItem(1, 1); // 每日签到赠送1个回复药水
+  // 每日签到赠送药水：每天1个小药水，第3天额外1个中药水，每7天额外1个大药水
+  addItem(1, 1);
+  if (save.checkInStreak % 7 === 3) addItem(2, 1);
+  if (save.checkInStreak % 7 === 0 && save.checkInStreak > 0) addItem(3, 1);
   saveSave(save);
   return reward;
 }
 
 /** 获取签到信息 */
-export function getCheckInInfo(): { streak: number; canCheckIn: boolean; todayReward: number } {
+export function getCheckInInfo(): { streak: number; canCheckIn: boolean; todayReward: number; todayItems: { itemId: number; count: number }[] } {
   const save = loadSave();
   const canCheckIn = !hasCheckedInToday();
   let reward = CHECKIN_REWARD + CHECKIN_STREAK_BONUS * save.checkInStreak;
@@ -155,7 +159,10 @@ export function getCheckInInfo(): { streak: number; canCheckIn: boolean; todayRe
   if (nextStreak >= 7 && nextStreak % 7 === 0) {
     reward += CHECKIN_STREAK_7_BONUS;
   }
-  return { streak: save.checkInStreak, canCheckIn, todayReward: reward };
+  const todayItems = [{ itemId: 1, count: 1 }];
+  if (nextStreak % 7 === 3) todayItems.push({ itemId: 2, count: 1 });
+  if (nextStreak % 7 === 0 && nextStreak > 0) todayItems.push({ itemId: 3, count: 1 });
+  return { streak: save.checkInStreak, canCheckIn, todayReward: reward, todayItems };
 }
 
 /** 添加金币 */
@@ -324,6 +331,35 @@ export function getBagItems(): { item: Item; count: number }[] {
     if (item && count > 0) items.push({ item, count });
   }
   return items;
+}
+
+// ==================== 新手礼包 ====================
+
+/** 新手礼包内容：2000金币 + 小药水×3 + 中药水×2 + 大药水×1 */
+export const NEWBIE_PACK = {
+  coins: 2000,
+  items: [
+    { itemId: 1, count: 3 },
+    { itemId: 2, count: 2 },
+    { itemId: 3, count: 1 },
+  ],
+};
+
+/** 是否还能领取新手礼包 */
+export function canClaimNewbiePack(): boolean {
+  const save = loadSave();
+  return !save.newbiePackClaimed;
+}
+
+/** 领取新手礼包，已领取则返回 null */
+export function claimNewbiePack(): { coins: number; items: { itemId: number; count: number }[] } | null {
+  const save = loadSave();
+  if (save.newbiePackClaimed) return null;
+  save.coins += NEWBIE_PACK.coins;
+  for (const it of NEWBIE_PACK.items) addItem(it.itemId, it.count);
+  save.newbiePackClaimed = true;
+  saveSave(save);
+  return { coins: NEWBIE_PACK.coins, items: NEWBIE_PACK.items };
 }
 
 // ==================== 任务系统 ====================

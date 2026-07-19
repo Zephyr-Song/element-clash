@@ -16,6 +16,7 @@ import { DamagePopup } from './components/DamagePopup';
 import { AudioManager } from '../utils/AudioManager';
 import { delay } from '../utils/helpers';
 import { getBagItems, consumeItem } from '../utils/Storage';
+import { renderPotionIcon } from '../utils/PotionIcon';
 import { TRAITS } from '../data/Traits';
 
 export class BattleScene {
@@ -324,9 +325,9 @@ export class BattleScene {
     for (const { item, count } of bag) {
       const option = document.createElement('div');
       option.className = 'switch-pet-option';
-      const emoji = item.type === 'fullRestore' ? '💊' : item.type === 'superPotion' ? '🧪' : '🥤';
+      const iconHtml = renderPotionIcon(item, 38);
       option.innerHTML = `
-        <span class="sp-emoji">${emoji}</span>
+        <span class="sp-emoji">${iconHtml}</span>
         <div class="sp-info">
           <div class="sp-name">${item.name} ×${count}</div>
           <div class="sp-hp">${item.description}</div>

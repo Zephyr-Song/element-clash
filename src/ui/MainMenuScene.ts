@@ -3,7 +3,7 @@
  */
 
 import { AudioManager } from '../utils/AudioManager';
-import { loadSave, saveSave, hasCheckedInToday, getCheckInInfo } from '../utils/Storage';
+import { loadSave, saveSave, hasCheckedInToday, getCheckInInfo, canClaimNewbiePack } from '../utils/Storage';
 import { STAGES } from '../data/Stages';
 
 export class MainMenuScene {
@@ -17,6 +17,7 @@ export class MainMenuScene {
   private onOpenTasks: () => void;
   private onOpenAchievements: () => void;
   private onOpenBag: () => void;
+  private onClaimNewbiePack: () => void;
 
   constructor(
     onStartBattle: () => void,
@@ -28,6 +29,7 @@ export class MainMenuScene {
     onOpenTasks: () => void,
     onOpenAchievements: () => void,
     onOpenBag: () => void,
+    onClaimNewbiePack: () => void,
   ) {
     this.onStartBattle = onStartBattle;
     this.onOpenPokedex = onOpenPokedex;
@@ -38,6 +40,7 @@ export class MainMenuScene {
     this.onOpenTasks = onOpenTasks;
     this.onOpenAchievements = onOpenAchievements;
     this.onOpenBag = onOpenBag;
+    this.onClaimNewbiePack = onClaimNewbiePack;
 
     this.el = document.createElement('div');
     this.el.className = 'scene main-menu';
@@ -69,6 +72,7 @@ export class MainMenuScene {
 
     this.el.innerHTML += `
       <button class="btn-bgm-toggle ${AudioManager.bgmEnabled ? '' : 'off'}" id="btn-bgm" title="背景音乐开关">${AudioManager.bgmEnabled ? '🎵' : '🔇'}</button>
+      <button class="btn-newbie ${canClaimNewbiePack() ? '' : 'claimed'}" id="btn-newbie">🎁 新手礼包</button>
       <h1 class="main-title">⚔️ 元素对决 ⚔️</h1>
       <p class="main-subtitle">Element Clash — 属性克制回合制卡牌对战</p>
       <div class="main-buttons">
@@ -129,6 +133,13 @@ export class MainMenuScene {
     this.el.querySelector('#btn-bag')!.addEventListener('click', () => {
       AudioManager.playClickSound();
       this.onOpenBag();
+    });
+
+    // 侧边新手礼包
+    const newbieBtn = this.el.querySelector('#btn-newbie') as HTMLButtonElement;
+    newbieBtn.addEventListener('click', () => {
+      AudioManager.playClickSound();
+      this.onClaimNewbiePack();
     });
 
     // 主界面音乐开关
