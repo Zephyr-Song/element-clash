@@ -18,6 +18,7 @@ export class MainMenuScene {
   private onOpenAchievements: () => void;
   private onOpenBag: () => void;
   private onClaimNewbiePack: () => void;
+  private onOpenTraining: () => void;
 
   constructor(
     onStartBattle: () => void,
@@ -30,6 +31,7 @@ export class MainMenuScene {
     onOpenAchievements: () => void,
     onOpenBag: () => void,
     onClaimNewbiePack: () => void,
+    onOpenTraining: () => void,
   ) {
     this.onStartBattle = onStartBattle;
     this.onOpenPokedex = onOpenPokedex;
@@ -41,6 +43,7 @@ export class MainMenuScene {
     this.onOpenAchievements = onOpenAchievements;
     this.onOpenBag = onOpenBag;
     this.onClaimNewbiePack = onClaimNewbiePack;
+    this.onOpenTraining = onOpenTraining;
 
     this.el = document.createElement('div');
     this.el.className = 'scene main-menu';
@@ -100,6 +103,15 @@ export class MainMenuScene {
           </button>
         </div>
 
+        <div class="menu-section-label">培养</div>
+        <div class="menu-grid menu-grid-core">
+          <button class="menu-card card-train" id="btn-training">
+            <span class="mc-icon">🐾</span>
+            <span class="mc-body"><span class="mc-title">宠物养成</span><span class="mc-desc">升级 · 进化你的伙伴</span></span>
+            <span class="mc-arrow">›</span>
+          </button>
+        </div>
+
         <div class="menu-section-label">日常 & 收藏</div>
         <div class="menu-grid menu-grid-sub">
           <button class="menu-card" id="btn-checkin">
@@ -147,6 +159,10 @@ export class MainMenuScene {
     this.el.querySelector('#btn-gacha')!.addEventListener('click', () => {
       AudioManager.playClickSound();
       this.onOpenGacha();
+    });
+    this.el.querySelector('#btn-training')!.addEventListener('click', () => {
+      AudioManager.playClickSound();
+      this.onOpenTraining();
     });
     this.el.querySelector('#btn-checkin')!.addEventListener('click', () => {
       AudioManager.playClickSound();

@@ -526,3 +526,68 @@ body{
   85% { opacity: 1; transform: translateX(-50%) translateY(0); }
   100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
 }
+
+/* ==================== TRAINING SCENE (宠物养成) ==================== */
+.training-scene{
+  width:100%;max-width:960px;margin:0 auto;padding:28px 20px 56px;
+  display:flex;flex-direction:column;gap:18px;
+  position:relative;z-index:1;overflow-y:auto;
+}
+.train-head{text-align:center;position:relative}
+.train-back{
+  position:absolute;left:0;top:6px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  color:#fff;padding:8px 16px;border-radius:10px;font-size:.9em;cursor:pointer;
+  transition:all .15s ease;
+}
+.train-back:hover{background:rgba(255,255,255,.16)}
+.train-title{
+  font-size:2em;font-weight:900;
+  background:linear-gradient(135deg,#f1c40f,#e84545,#667eea,#26de81);
+  background-size:300% 300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:titleShift 3s ease infinite;
+}
+.train-sub{font-size:.9em;color:rgba(255,255,255,.45);margin-top:2px}
+
+.train-stats{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.tstat{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  padding:8px 14px;border-radius:999px;font-size:.85em;color:rgba(255,255,255,.7);
+}
+.tstat-ic{font-size:1.05em}
+
+.train-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.train-card{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.09);
+  border-top:3px solid var(--c,#667eea);
+  border-radius:14px;padding:16px;
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.train-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+  border-color:var(--c,#667eea);
+}
+.tr-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.tr-emoji{font-size:2.2em;line-height:1}
+.tr-name{flex:1;font-weight:800;font-size:1.05em;color:#fff}
+.tr-lv{
+  font-size:.8em;font-weight:700;color:#fff;
+  background:var(--c,#667eea);padding:2px 10px;border-radius:999px;
+}
+.tr-elem{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.tr-el{font-size:.72em;padding:1px 8px;border-radius:6px;font-weight:600}
+.tr-xpbar{height:9px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden;margin-bottom:4px}
+.tr-xpfill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--c,#667eea),#fff);transition:width .4s ease}
+.tr-xptxt{font-size:.72em;color:rgba(255,255,255,.45);margin-bottom:10px;text-align:right}
+.tr-evo{font-size:.8em;color:rgba(255,255,255,.6);margin-bottom:10px}
+.tr-evo.done{color:#ffd86b;font-weight:600}
+.tr-evo-remain{color:rgba(255,255,255,.4);font-weight:400}
+.tr-evo.muted{color:rgba(255,255,255,.3)}
+.tr-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:4px 8px;
+  font-size:.74em;color:rgba(255,255,255,.55);
+  border-top:1px solid rgba(255,255,255,.07);padding-top:10px;
+}
