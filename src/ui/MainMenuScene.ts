@@ -106,8 +106,8 @@ export class MainMenuScene {
         <div class="menu-section-label">培养</div>
         <div class="menu-grid menu-grid-core">
           <button class="menu-card card-train" id="btn-training">
-            <span class="mc-icon">🐾</span>
-            <span class="mc-body"><span class="mc-title">宠物养成</span><span class="mc-desc">升级 · 进化你的伙伴</span></span>
+            <span class="mc-icon">📊</span>
+            <span class="mc-body"><span class="mc-title">宠物属性</span><span class="mc-desc">查看属性与技能</span></span>
             <span class="mc-arrow">›</span>
           </button>
         </div>

@@ -305,7 +305,7 @@ export interface Stage {
 }
 
 /** 场景类型 */
-export type SceneType = 'main-menu' | 'stage-select' | 'pet-select' | 'battle' | 'result' | 'gacha' | 'checkin' | 'training';
+export type SceneType = 'main-menu' | 'stage-select' | 'pet-select' | 'battle' | 'result' | 'gacha' | 'checkin' | 'pet-info';
 
 /** 抽卡稀有度 */
 export type GachaRarity = 'R' | 'SR' | 'SSR';

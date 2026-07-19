@@ -17,7 +17,7 @@ import { BattleScene } from './BattleScene';
 import { ResultScene } from './ResultScene';
 import { ShareModal } from './ShareModal';
 import { GachaScene } from './GachaScene';
-import { TrainingScene } from './TrainingScene';
+import { PetInfoScene } from './PetInfoScene';
 
 export class GameApp {
   private container: HTMLElement;
@@ -65,13 +65,13 @@ export class GameApp {
       () => this.showAchievements(),
       () => this.showBag(),
       () => this.showNewbiePack(),
-      () => this.showTraining(),
+      () => this.showPetInfo(),
     ), 'main-menu');
   }
 
   /** 显示宠物养成窗口 */
-  showTraining(): void {
-    this.switchScene(new TrainingScene(() => this.showMainMenu()), 'training');
+  showPetInfo(): void {
+    this.switchScene(new PetInfoScene(() => this.showMainMenu()), 'pet-info');
   }
 
   /** 显示关卡选择界面 */
