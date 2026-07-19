@@ -205,3 +205,29 @@ export const PETS: Pet[] = [
 export function getPetById(id: number): Pet | undefined {
   return PETS.find(p => p.id === id);
 }
+
+/**
+ * 进化配置：宠物达到指定等级后触发进化，获得全属性加成
+ * 不污染宠物模板，独立维护，便于图鉴/选宠/战斗统一读取
+ */
+export interface EvolutionInfo {
+  level: number;     // 进化所需等级
+  bonus: number;     // 进化后全属性加成(如0.35=+35%)
+  name: string;      // 进化形态名
+  emoji: string;     // 进化形态图标
+}
+export const EVOLUTIONS: Record<number, EvolutionInfo> = {
+  1:  { level: 60, bonus: 0.35, name: '焰灵狐王', emoji: '🔥' },
+  3:  { level: 60, bonus: 0.35, name: '碧海龙王', emoji: '🐉' },
+  4:  { level: 65, bonus: 0.35, name: '森罗古树', emoji: '🌲' },
+  6:  { level: 60, bonus: 0.35, name: '极地雪狼王', emoji: '🐺' },
+  7:  { level: 70, bonus: 0.40, name: '远古龙皇', emoji: '🐲' },
+  9:  { level: 65, bonus: 0.35, name: '暗夜影后', emoji: '🐱' },
+  10: { level: 60, bonus: 0.35, name: '疾风鹰王', emoji: '🦅' },
+  11: { level: 60, bonus: 0.35, name: '万毒魔蛇', emoji: '🐍' },
+};
+
+/** 获取宠物进化信息（未配置则返回 undefined） */
+export function getEvolution(petId: number): EvolutionInfo | undefined {
+  return EVOLUTIONS[petId];
+}

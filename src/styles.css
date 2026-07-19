@@ -194,6 +194,14 @@ body{
 .pet-card .stat-bar{flex:1;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
 .pet-card .stat-fill{height:100%;border-radius:2px;transition:width .3s ease}
 .pet-card .trait{text-align:center;font-size:.7em;color:rgba(255,255,255,.35);margin-top:5px}
+.pet-card .pet-level{font-size:.72em;font-weight:700;color:#f1c40f;margin:2px 0 1px}
+.pet-card .evo-badge{font-size:.7em;font-weight:700;color:#26de81;margin-bottom:4px}
+.pet-card .evo-hint{font-size:.66em;color:rgba(255,255,255,.42);margin-bottom:4px}
+
+/* 成长报告 modal */
+.growth-modal .growth-row{font-size:.95em;color:#fff;padding:7px 2px;border-bottom:1px solid rgba(255,255,255,.08)}
+.growth-modal .growth-row:last-child{border-bottom:none}
+.growth-modal .growth-row.evo{color:#f1c40f;font-weight:700;text-shadow:0 0 12px rgba(241,196,15,.4)}
 
 /* ==================== BATTLE SCENE ==================== */
 .battle-scene{

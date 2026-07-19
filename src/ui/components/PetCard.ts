@@ -7,6 +7,8 @@ import type { Pet } from '../../data/types';
 import { ELEMENT_COLORS, ELEMENT_NAMES, ELEMENT_EMOJIS } from '../../data/types';
 import { TRAITS } from '../../data/Traits';
 import { AudioManager } from '../../utils/AudioManager';
+import { getPetLevel, isPetEvolved } from '../../utils/Storage';
+import { getEvolution } from '../../data/Pets';
 
 const STAT_MAX = 130; // 归一化用的最大值
 
@@ -61,6 +63,12 @@ export class PetCard {
     }
 
     const color = ELEMENT_COLORS[this.pet.element] || '#666';
+    const level = getPetLevel(this.pet.id);
+    const evolved = isPetEvolved(this.pet.id);
+    const evo = getEvolution(this.pet.id);
+    let evoHtml = '';
+    if (evo && evolved) evoHtml = `<div class="evo-badge">⬆ 已进化 ${evo.emoji}${evo.name}</div>`;
+    else if (evo) evoHtml = `<div class="evo-hint">⬆ Lv.${evo.level} 进化</div>`;
     const stats = [
       { label: 'HP', val: this.pet.baseHp },
       { label: '攻', val: this.pet.baseAtk },
@@ -81,6 +89,8 @@ export class PetCard {
       <div class="el-bar" style="background:${color}"></div>
       <span class="emoji">${this.pet.emoji}</span>
       <div class="name">${this.pet.name}</div>
+      <div class="pet-level">Lv.${level}</div>
+      ${evoHtml}
       <span class="el-tag" style="background:${color}33;color:${color}">
         ${ELEMENT_EMOJIS[this.pet.element] || ''} ${ELEMENT_NAMES[this.pet.element] || ''}
         ${this.pet.secondaryElement ? ' ' + (ELEMENT_EMOJIS[this.pet.secondaryElement] || '') + ' ' + (ELEMENT_NAMES[this.pet.secondaryElement] || '') : ''}

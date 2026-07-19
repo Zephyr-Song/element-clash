@@ -3,7 +3,7 @@
  */
 
 import type { SaveData, GachaResult, GachaRarity, Item } from '../data/types';
-import { PETS } from '../data/Pets';
+import { PETS, getEvolution } from '../data/Pets';
 import { DAILY_TASKS, WEEKLY_TASKS, type TaskMetric, type TaskTemplate } from '../data/Tasks';
 import { ACHIEVEMENTS } from '../data/Achievements';
 import { getItemById } from '../data/Items';
@@ -56,6 +56,9 @@ const DEFAULT_SAVE: SaveData = {
   tasks: { dailyDate: '', weeklyDate: '', progress: {}, claimed: [] },
   achievements: {},
   newbiePackClaimed: false,
+  petLevels: {},
+  petExp: {},
+  petEvolved: {},
 };
 
 export function loadSave(): SaveData {
@@ -487,6 +490,78 @@ export function getAchievementStatuses(): AchievementStatus[] {
     unlocked: !!save.achievements[a.id],
     rewardCoins: a.rewardCoins,
   }));
+}
+
+// ==================== 宠物养成（等级 / 经验 / 进化） ====================
+
+/** 宠物等级上限 */
+export const MAX_PET_LEVEL = 100;
+/** 宠物默认等级（与现有50级平衡一致） */
+export const DEFAULT_PET_LEVEL = 50;
+
+/** 获取宠物当前等级（缺省返回默认等级） */
+export function getPetLevel(petId: number): number {
+  const save = loadSave();
+  return save.petLevels[petId] ?? DEFAULT_PET_LEVEL;
+}
+
+/** 获取宠物当前经验 */
+export function getPetExp(petId: number): number {
+  const save = loadSave();
+  return save.petExp[petId] ?? 0;
+}
+
+/** 是否已进化 */
+export function isPetEvolved(petId: number): boolean {
+  const save = loadSave();
+  return !!save.petEvolved[petId];
+}
+
+/** 升到下一级所需经验 */
+export function expToNext(level: number): number {
+  return Math.floor(180 + level * 12);
+}
+
+export interface LevelUpResult {
+  id: number;
+  from: number;
+  to: number;
+}
+export interface BattleExpResult {
+  levelUps: LevelUpResult[];
+  evolved: number[];
+}
+
+/**
+ * 给指定宠物增加战斗经验，处理升级与进化
+ * @param petIds 参战宠物ID列表
+ * @param expPerPet 每只宠物获得的经验
+ */
+export function addBattleExp(petIds: number[], expPerPet: number): BattleExpResult {
+  const save = loadSave();
+  const result: BattleExpResult = { levelUps: [], evolved: [] };
+  for (const id of petIds) {
+    const base = save.petLevels[id] ?? DEFAULT_PET_LEVEL;
+    let level = base;
+    let exp = (save.petExp[id] ?? 0) + expPerPet;
+    while (level < MAX_PET_LEVEL && exp >= expToNext(level)) {
+      exp -= expToNext(level);
+      level++;
+    }
+    if (level > base) {
+      result.levelUps.push({ id, from: base, to: level });
+    }
+    save.petLevels[id] = level;
+    save.petExp[id] = exp;
+    // 进化判定
+    const evo = getEvolution(id);
+    if (evo && level >= evo.level && !save.petEvolved[id]) {
+      save.petEvolved[id] = true;
+      result.evolved.push(id);
+    }
+  }
+  saveSave(save);
+  return result;
 }
 
 

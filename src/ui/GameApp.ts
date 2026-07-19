@@ -3,11 +3,11 @@
  */
 
 import type { Pet, BattleState, SceneType, Difficulty } from '../data/types';
-import { PETS } from '../data/Pets';
+import { PETS, getEvolution, getPetById } from '../data/Pets';
 import { getItemById } from '../data/Items';
 import { renderPotionIcon } from '../utils/PotionIcon';
 import { STAGES, getEnemyPets, getUnlockedPetIds, STARTER_PET_IDS } from '../data/Stages';
-import { loadSave, saveSave, updateRecord, isStageCompleted, completeStage, checkIn, getCheckInInfo, GACHA_PET_IDS, canClaimCheckInReward, claimCheckInReward, CHECKIN_REWARD_PET_ID, CHECKIN_REWARD_STREAK, canClaimCheckInReward7, claimCheckInReward7, CHECKIN_REWARD_PET_ID_7, CHECKIN_REWARD_STREAK_7, getTaskStatuses, claimTask, getAchievementStatuses, getBagItems, consumeItem, addItem, canClaimNewbiePack, claimNewbiePack, NEWBIE_PACK, type TaskStatus, type AchievementStatus } from '../utils/Storage';
+import { loadSave, saveSave, updateRecord, isStageCompleted, completeStage, checkIn, getCheckInInfo, GACHA_PET_IDS, canClaimCheckInReward, claimCheckInReward, CHECKIN_REWARD_PET_ID, CHECKIN_REWARD_STREAK, canClaimCheckInReward7, claimCheckInReward7, CHECKIN_REWARD_PET_ID_7, CHECKIN_REWARD_STREAK_7, getTaskStatuses, claimTask, getAchievementStatuses, getBagItems, consumeItem, addItem, canClaimNewbiePack, claimNewbiePack, NEWBIE_PACK, type TaskStatus, type AchievementStatus, getPetLevel, isPetEvolved, DEFAULT_PET_LEVEL, addBattleExp, BattleExpResult } from '../utils/Storage';
 import { AudioManager } from '../utils/AudioManager';
 import { ELEMENT_NAMES, ELEMENT_COLORS, ELEMENT_EMOJIS } from '../data/types';
 import { getEffectiveness } from '../data/Elements';
@@ -208,9 +208,10 @@ export class GameApp {
 
     const enemyPets = getEnemyPets(stageId);
     const difficulty: Difficulty = stage.difficulty;
+    const playerPets = this.prepareBattlePets(this.selectedPlayerPets);
 
     this.switchScene(new BattleScene(
-      this.selectedPlayerPets,
+      playerPets,
       enemyPets,
       difficulty,
       (state) => {
@@ -219,6 +220,38 @@ export class GameApp {
       },
       () => this.showStageSelect(),   // 中途退出 → 返回关卡选择
     ), 'battle');
+  }
+
+  /**
+   * 根据养成数据生成战斗用宠物副本
+   * - 等级越高属性越强（mult = level/50）
+   * - 已进化的宠物获得全属性加成，并显示进化形态名/图标
+   * 不改变引擎逻辑，仅缩放基础属性，兼容旧存档
+   */
+  private prepareBattlePets(pets: Pet[]): Pet[] {
+    return pets.map(p => {
+      const level = getPetLevel(p.id);
+      const mult = level / DEFAULT_PET_LEVEL;
+      const evolved = isPetEvolved(p.id);
+      const evo = getEvolution(p.id);
+      const evoMult = evolved && evo ? 1 + evo.bonus : 1;
+      const total = mult * evoMult;
+      const scale = (v: number) => Math.max(1, Math.floor(v * total));
+      const battlePet: Pet = {
+        ...p,
+        baseHp: scale(p.baseHp),
+        baseAtk: scale(p.baseAtk),
+        baseDef: scale(p.baseDef),
+        baseSpA: scale(p.baseSpA),
+        baseSpD: scale(p.baseSpD),
+        baseSpe: scale(p.baseSpe),
+      };
+      if (evolved && evo) {
+        battlePet.name = evo.name;
+        battlePet.emoji = evo.emoji;
+      }
+      return battlePet;
+    });
   }
 
   /** 显示结果界面 */
@@ -249,9 +282,47 @@ export class GameApp {
       const firstClear = !isCompleted;
       completeStage(stageId);
       if (firstClear) addItem(1, 1); // 首次通关赠送1个小药水
+      // 养成系统：发放战斗经验（等级/进化）
+      const expPerPet = 100 + stageId * 25;
+      const growth = addBattleExp(this.selectedPlayerPets.map(p => p.id), expPerPet);
+      if (growth.levelUps.length || growth.evolved.length) {
+        this.showGrowthReport(growth);
+      }
     }
 
     this.switchScene(scene, 'result');
+  }
+
+  /** 展示成长报告（升级 / 进化） */
+  private showGrowthReport(growth: BattleExpResult): void {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    const modal = document.createElement('div');
+    modal.className = 'modal growth-modal';
+    let html = `<h2>🌟 成长报告</h2><div class="modal-body" style="text-align:left">`;
+    for (const lu of growth.levelUps) {
+      const pet = getPetById(lu.id);
+      if (pet) html += `<div class="growth-row">⬆️ <b>${pet.name}</b> 升到 Lv.${lu.to}！</div>`;
+    }
+    for (const id of growth.evolved) {
+      const pet = getPetById(id);
+      const evo = getEvolution(id);
+      if (pet && evo) html += `<div class="growth-row evo">✨ <b>${pet.name}</b> 进化成 ${evo.emoji}${evo.name}！</div>`;
+    }
+    html += `</div>`;
+    modal.innerHTML = html;
+
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-success';
+    btn.textContent = '太棒了！';
+    btn.addEventListener('click', () => overlay.remove());
+    const footer = document.createElement('div');
+    footer.className = 'modal-footer';
+    footer.appendChild(btn);
+    modal.appendChild(footer);
+
+    overlay.appendChild(modal);
+    this.container.appendChild(overlay);
   }
 
   /** 显示分享模态框 */

@@ -347,4 +347,7 @@ export interface SaveData {
   tasks: TaskProgress;              // 每日/周常任务进度
   achievements: Record<number, boolean>; // 成就解锁状态(achId -> 是否解锁)
   newbiePackClaimed: boolean;       // 新手礼包是否已领取
+  petLevels: Record<number, number>; // 每只已拥有宠物的等级(petId->level)，缺省按50处理
+  petExp: Record<number, number>;    // 每只宠物当前经验(petId->exp)
+  petEvolved: Record<number, boolean>; // 已进化标记(petId->是否已进化)
 }
